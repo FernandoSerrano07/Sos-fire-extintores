@@ -1,0 +1,15 @@
+{
+  "name": "Extintores · SOS FIRE",
+  "short_name": "Extintores",
+  "description": "Inspección de extintores en el teléfono y seguimiento en tiempo real",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F5F5F4",
+  "theme_color": "#C90012",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

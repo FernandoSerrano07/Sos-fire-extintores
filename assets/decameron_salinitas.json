@@ -1,0 +1,3027 @@
+{
+ "cliente": "Decameron Salinitas",
+ "lugar": "Salinitas",
+ "pais": "El Salvador",
+ "extintores": [
+  {
+   "n": 1,
+   "zona": "ZONA #1",
+   "area": "Tanque de gas La mar (216)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "216"
+  },
+  {
+   "n": 2,
+   "zona": "ZONA #1",
+   "area": "Tanque de gas La mar (219)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "21",
+   "serie": "S/S",
+   "numero": "219"
+  },
+  {
+   "n": 3,
+   "zona": "ZONA #1",
+   "area": "Cocina la mar (37417)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "493452",
+   "numero": "37417"
+  },
+  {
+   "n": 4,
+   "zona": "ZONA #1",
+   "area": "cocina la mar (271)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "1.5",
+   "serie": "814012",
+   "numero": "271"
+  },
+  {
+   "n": 5,
+   "zona": "ZONA #1",
+   "area": "Restaurante la mar (0019)",
+   "marca": "Kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "745686",
+   "numero": "0-019"
+  },
+  {
+   "n": 6,
+   "zona": "ZONA #1",
+   "area": "Generador la mar (218)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "56186",
+   "numero": "218"
+  },
+  {
+   "n": 7,
+   "zona": "ZONA #1",
+   "area": "Generador la mar (0261)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "91449",
+   "numero": "261"
+  },
+  {
+   "n": 8,
+   "zona": "ZONA #1",
+   "area": "Generador la mar (0184)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "574031",
+   "numero": "184"
+  },
+  {
+   "n": 9,
+   "zona": "ZONA #1",
+   "area": "Bar la mar (0010)",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-010"
+  },
+  {
+   "n": 10,
+   "zona": "ZONA #1",
+   "area": "Cuarto electrico la mar (0068)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "572663",
+   "numero": "0-068"
+  },
+  {
+   "n": 11,
+   "zona": "ZONA #1",
+   "area": "Kiosco la mar 2 (0135)",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "000372",
+   "numero": "0-135"
+  },
+  {
+   "n": 12,
+   "zona": "ZONA #1",
+   "area": "Kiosco la mar 1 (0159)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-159"
+  },
+  {
+   "n": 13,
+   "zona": "ZONA #1",
+   "area": "Caseta principal entrada (0188)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-188"
+  },
+  {
+   "n": 14,
+   "zona": "ZONA #1",
+   "area": "Tanque de gas Oliva (0119)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-119"
+  },
+  {
+   "n": 15,
+   "zona": "ZONA #1",
+   "area": "Tanque de gas Oliva (222)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "222"
+  },
+  {
+   "n": 16,
+   "zona": "ZONA #1",
+   "area": "Generador Oliva (0206)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "715127",
+   "numero": "0-206"
+  },
+  {
+   "n": 17,
+   "zona": "ZONA #1",
+   "area": "Generador Oliva (3639)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "572676",
+   "numero": "3639"
+  },
+  {
+   "n": 18,
+   "zona": "ZONA #1",
+   "area": "Generador Oliva (0062)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "8989",
+   "numero": "0-062"
+  },
+  {
+   "n": 19,
+   "zona": "ZONA #1",
+   "area": "Sala de videojuegos (0172)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "56745",
+   "numero": "0-172"
+  },
+  {
+   "n": 20,
+   "zona": "ZONA #1",
+   "area": "Cocina Oliva (0014)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "1.5 GL",
+   "serie": "345726",
+   "numero": "0-014"
+  },
+  {
+   "n": 21,
+   "zona": "ZONA #1",
+   "area": "Cocina Oliva (0244)",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "1.5 GL",
+   "serie": "00065",
+   "numero": "0-244"
+  },
+  {
+   "n": 22,
+   "zona": "ZONA #1",
+   "area": "Cocina Oliva (0185)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-185"
+  },
+  {
+   "n": 23,
+   "zona": "ZONA #1",
+   "area": "Restaurante Oliva baños (0127)",
+   "marca": "Kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "31887888",
+   "numero": "0-127"
+  },
+  {
+   "n": 24,
+   "zona": "ZONA #1",
+   "area": "Restaurante Oliva (39898)",
+   "marca": "Kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "39898"
+  },
+  {
+   "n": 25,
+   "zona": "ZONA #1",
+   "area": "Bar Oliva (0244)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "24763",
+   "numero": "0-244"
+  },
+  {
+   "n": 26,
+   "zona": "ZONA #1",
+   "area": "Restaurante Oliva (0114)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-114"
+  },
+  {
+   "n": 27,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 1153/1152 (00135)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-135"
+  },
+  {
+   "n": 28,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 1144/1145 (0120)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "366114",
+   "numero": "0-120"
+  },
+  {
+   "n": 29,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 1136/1137 (0264)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-264"
+  },
+  {
+   "n": 30,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 1128/1129 (0023)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-023"
+  },
+  {
+   "n": 31,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 1120/1121 (0147)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-147"
+  },
+  {
+   "n": 32,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 1112/1113 (0025)",
+   "marca": "AMEREX",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-025"
+  },
+  {
+   "n": 33,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 1104/1105 (0138)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-138"
+  },
+  {
+   "n": 34,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 2 1204/1205 (0010)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "00745699",
+   "numero": "0-010"
+  },
+  {
+   "n": 35,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 2 1212/1213 (0280)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-280"
+  },
+  {
+   "n": 36,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 2 1220/1221 (0086)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-086"
+  },
+  {
+   "n": 37,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 2 1228/1229 (4052)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "00745674",
+   "numero": "4052"
+  },
+  {
+   "n": 38,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 2 1236/1237 (4051)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "4051"
+  },
+  {
+   "n": 39,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 2 1244/1245 (0102)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-102"
+  },
+  {
+   "n": 40,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 2 1252/1253 (0080)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-080"
+  },
+  {
+   "n": 41,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 3 1352/1353 (0241)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-241"
+  },
+  {
+   "n": 42,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 3 1344/1345 (0176)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-176"
+  },
+  {
+   "n": 43,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 3 1336/1337 (0274)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "400052",
+   "numero": "0-274"
+  },
+  {
+   "n": 44,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 3 1328/1329 (0104)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-104"
+  },
+  {
+   "n": 45,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 3 1320/1321 (0256)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-256"
+  },
+  {
+   "n": 46,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 3 1312/1313 (0299)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "31887859",
+   "numero": "0-299"
+  },
+  {
+   "n": 47,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Edificio # 1 nvl 3 1304/1305 (4053)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "31887861",
+   "numero": "4053"
+  },
+  {
+   "n": 48,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Restaurante Chack Balam Nivel 1 (0008)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "745657",
+   "numero": "0-008"
+  },
+  {
+   "n": 49,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Restaurante Chack Balam Nivel (00200)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-0200"
+  },
+  {
+   "n": 50,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Restaurante Chack Balam Nivel 1 (0226)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "56168",
+   "numero": "0-226"
+  },
+  {
+   "n": 51,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Chack Balam Cocina (00010)",
+   "marca": "Centella",
+   "tipo": "K",
+   "capacidad": "1.5 GAL",
+   "serie": "345738",
+   "numero": "0-0010"
+  },
+  {
+   "n": 52,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Chack Balam Cocina Pasillo (0245)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "382075",
+   "numero": "0-245"
+  },
+  {
+   "n": 53,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Chack Balam Panaderia (0261)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "688",
+   "numero": "0-261"
+  },
+  {
+   "n": 54,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Chack Balam restaurante nvl. 2 (0075)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-075"
+  },
+  {
+   "n": 55,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Tanque GLP Restaurante PPAL (0158)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-158"
+  },
+  {
+   "n": 56,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Tanque GLP Restaurante PPAL (3704)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "3704"
+  },
+  {
+   "n": 57,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Maya Bar (0129)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-129"
+  },
+  {
+   "n": 58,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Restaurante steak House (4057)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "00078",
+   "numero": "4057"
+  },
+  {
+   "n": 59,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Restaurante steak House (0263)",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "000060",
+   "numero": "0-263"
+  },
+  {
+   "n": 60,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Gym (0005)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "*00745721",
+   "numero": "0-005"
+  },
+  {
+   "n": 61,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Jacuzzy (0009)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "13108427",
+   "numero": "0-009"
+  },
+  {
+   "n": 62,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Bar Akan (0212)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "430809",
+   "numero": "0-212"
+  },
+  {
+   "n": 63,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Bar Akan (0011)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-011"
+  },
+  {
+   "n": 64,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Boutique (0019)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-019"
+  },
+  {
+   "n": 65,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Chack Balam cuarto electrico (0006)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "178525",
+   "numero": "0-006"
+  },
+  {
+   "n": 66,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Restaurante Chack Balam (0192)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "s/s",
+   "numero": "0-192"
+  },
+  {
+   "n": 67,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Restaurante Chack Balam Nivel 2",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "00081",
+   "numero": "0-0081"
+  },
+  {
+   "n": 68,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Restaurante Chack Balam Nivel 2",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "00011",
+   "numero": "0-0011"
+  },
+  {
+   "n": 69,
+   "zona": "EDIFICIO # 1 ZONA #2",
+   "area": "Restaurante Chack Balam Nivel 2",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "00041",
+   "numero": "0-0041"
+  },
+  {
+   "n": 70,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Compras (0067)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "496638",
+   "numero": "0-067"
+  },
+  {
+   "n": 71,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Tienda Empleados (0002)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "*00745678",
+   "numero": "0-002"
+  },
+  {
+   "n": 72,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Cafeteria empleados (0899)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "814512",
+   "numero": "0-899"
+  },
+  {
+   "n": 73,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Bodega Lavanderia (0016)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-016"
+  },
+  {
+   "n": 74,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Bodega Lavanderia (0020)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-020"
+  },
+  {
+   "n": 75,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Entrada lavanderia (0063)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "400015",
+   "numero": "0-063"
+  },
+  {
+   "n": 76,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Lavanderia izquierda (215)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "0-215"
+  },
+  {
+   "n": 77,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Lavanderia derecha (0156)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "247662",
+   "numero": "0-156"
+  },
+  {
+   "n": 78,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Lavanderia derecha (374127)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "374127"
+  },
+  {
+   "n": 79,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Lavanderia caldera ( 0268)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-268"
+  },
+  {
+   "n": 80,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Planta electrica (0178)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "58704",
+   "numero": "0-178"
+  },
+  {
+   "n": 81,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Planta electrica 1 (0258)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "293478",
+   "numero": "0-258"
+  },
+  {
+   "n": 82,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Planta electrica 1 (0277)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "574044",
+   "numero": "0-277"
+  },
+  {
+   "n": 83,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Planta electrica (0233)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "563219",
+   "numero": "0-233"
+  },
+  {
+   "n": 84,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Calderas 1 (5470)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "5470"
+  },
+  {
+   "n": 85,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Calderas (0280)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "367029",
+   "numero": "0-280"
+  },
+  {
+   "n": 86,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Calderas 1 (3939)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "3939"
+  },
+  {
+   "n": 87,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Filtro 1 (212)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "0-212"
+  },
+  {
+   "n": 88,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Filtro 1 (0035)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "839921",
+   "numero": "0-035"
+  },
+  {
+   "n": 89,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Sistema (0170)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "9905",
+   "numero": "0-170"
+  },
+  {
+   "n": 90,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Recursos Humanos (0005)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "59483",
+   "numero": "0-005"
+  },
+  {
+   "n": 91,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Contabilidad (0191)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "56178",
+   "numero": "0-191"
+  },
+  {
+   "n": 92,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Contabilidad (0154)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "400208",
+   "numero": "0-154"
+  },
+  {
+   "n": 93,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Oficina de costos (01801)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "68792",
+   "numero": "0-1801"
+  },
+  {
+   "n": 94,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Entrada almacen de alimentos (0236)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "574050",
+   "numero": "0-236"
+  },
+  {
+   "n": 95,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Carniceria (0039)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "112524",
+   "numero": "0-039"
+  },
+  {
+   "n": 96,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Almacen de alimentos (0167)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "247625",
+   "numero": "0-167"
+  },
+  {
+   "n": 97,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Edificio ejecutivo nvl 1 (5662)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "*00745562",
+   "numero": "5662"
+  },
+  {
+   "n": 98,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Bodega de bebida (203)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "203"
+  },
+  {
+   "n": 99,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Edificio ejecutivo nvl 2 (0218)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "430778",
+   "numero": "0-218"
+  },
+  {
+   "n": 100,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Edificio ejecutivo nv 3 (0156)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-156"
+  },
+  {
+   "n": 101,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Generador Expo Center 1",
+   "marca": "Kidde",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": ""
+  },
+  {
+   "n": 102,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Generador Expo Center 2",
+   "marca": "Kidde Y.",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": ""
+  },
+  {
+   "n": 103,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Bodega de animacion (0141)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-141"
+  },
+  {
+   "n": 104,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "Cafeteria empleados",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "000176",
+   "numero": ""
+  },
+  {
+   "n": 105,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Maya (0171)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "400198",
+   "numero": "0-171"
+  },
+  {
+   "n": 106,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon UXMAL (0145)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-145"
+  },
+  {
+   "n": 107,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Tikal (0110)",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "31887870",
+   "numero": "0-110"
+  },
+  {
+   "n": 108,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Uxmal (0141)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-141"
+  },
+  {
+   "n": 109,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Pasillo centro de convenciones (0099)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-099"
+  },
+  {
+   "n": 110,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Bodega centro de convenciones (0070)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "572769",
+   "numero": "0-070"
+  },
+  {
+   "n": 111,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Cocina centro de convenciones (0128)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-128"
+  },
+  {
+   "n": 112,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Kaabah (0020)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "*00745709",
+   "numero": "0-020"
+  },
+  {
+   "n": 113,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salom Kaabah (0224)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "443491",
+   "numero": "0-224"
+  },
+  {
+   "n": 114,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Generador expo (276)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "247636",
+   "numero": "0-276"
+  },
+  {
+   "n": 115,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Bussines center (0262)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "716064",
+   "numero": "0-262"
+  },
+  {
+   "n": 116,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Ixchel (0126)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-126"
+  },
+  {
+   "n": 117,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Ixchel camerino de mujeres (0240)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-240"
+  },
+  {
+   "n": 118,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Ixchel (0271)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-271"
+  },
+  {
+   "n": 119,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Ixchel (0177)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-177"
+  },
+  {
+   "n": 120,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon ixchel (0166)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-166"
+  },
+  {
+   "n": 121,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Cabina anfiteatro (0254)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-254"
+  },
+  {
+   "n": 122,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Kukulkan (0125)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-125"
+  },
+  {
+   "n": 123,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Kukulkan (0003)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "400039",
+   "numero": "0-003"
+  },
+  {
+   "n": 124,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Frente salon Kulkulkan (0256)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-256"
+  },
+  {
+   "n": 125,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Kopan (0035)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-035"
+  },
+  {
+   "n": 126,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Quetzal (0464)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "643280",
+   "numero": "0-464"
+  },
+  {
+   "n": 127,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Quetzal (0203)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-203"
+  },
+  {
+   "n": 128,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Centro de negocios (1018)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "247599",
+   "numero": "1018"
+  },
+  {
+   "n": 129,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Koba (0256)",
+   "marca": "century",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-256"
+  },
+  {
+   "n": 130,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Bodega salon Koba (0058)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-058"
+  },
+  {
+   "n": 131,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "BODEGA EXPOCENTRO (5050)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "5050"
+  },
+  {
+   "n": 132,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "BODEGA EXPOCENTRO (5051)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "245909",
+   "numero": "5051"
+  },
+  {
+   "n": 133,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Salon Tajin (0177)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "31887849",
+   "numero": "0-177"
+  },
+  {
+   "n": 134,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Fte salon Tajin (0185)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-185"
+  },
+  {
+   "n": 135,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Lobby # 1 (0160)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "400197",
+   "numero": "0-160"
+  },
+  {
+   "n": 136,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "GERENCIA (0003)",
+   "marca": "Kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "*00745718",
+   "numero": "0.003"
+  },
+  {
+   "n": 137,
+   "zona": "CENTRO DE CONVENCIONES,SALONES Y DISCOTECA. ZONA #4",
+   "area": "Lobby # 1 (0007)",
+   "marca": "Kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "745685",
+   "numero": "0-007"
+  },
+  {
+   "n": 138,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio #2 nvl 1 2105/2104 (0001)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "645695",
+   "numero": "0-001"
+  },
+  {
+   "n": 139,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 1 2111/2112 (0024)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-024"
+  },
+  {
+   "n": 140,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 1 2119/2118 (0222)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-222"
+  },
+  {
+   "n": 141,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 1 2127/2126 (0071)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-071"
+  },
+  {
+   "n": 142,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio #2 nvl 1 2133/2132 (0154)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-154"
+  },
+  {
+   "n": 143,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 1 2138/2139 (0043)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-043"
+  },
+  {
+   "n": 144,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 1 2147/2146 (0194)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-194"
+  },
+  {
+   "n": 145,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 2 2247/2246 (172)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-172"
+  },
+  {
+   "n": 146,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 2 2240/2239 (0163)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-163"
+  },
+  {
+   "n": 147,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 2 2233/2232 (0125)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-125"
+  },
+  {
+   "n": 148,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 2 2227/2226 (0214)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-214"
+  },
+  {
+   "n": 149,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 2 2219/2218 (0132)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "829493",
+   "numero": "0-132"
+  },
+  {
+   "n": 150,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 2 2205/2204 (00024)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-0024"
+  },
+  {
+   "n": 151,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 3 2305/2304 (0180)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-180"
+  },
+  {
+   "n": 152,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 3 2312/2311 (0157)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-157"
+  },
+  {
+   "n": 153,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 3 2319/2318 (0129)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-129"
+  },
+  {
+   "n": 154,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 3 2327/2326 (0043)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-043"
+  },
+  {
+   "n": 155,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 3 2333/2332 (0207)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-207"
+  },
+  {
+   "n": 156,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 3 2340/2339 (0101)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-101"
+  },
+  {
+   "n": 157,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Edificio # 2 nvl 3 2347/2346 (1023)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "1023"
+  },
+  {
+   "n": 158,
+   "zona": "EDIFICIO # 2 ZONA #6",
+   "area": "Say 2 Cuarto electrico (749034)",
+   "marca": "Kidde",
+   "tipo": "CO₂",
+   "capacidad": "20",
+   "serie": "505673",
+   "numero": "749034"
+  },
+  {
+   "n": 159,
+   "zona": "EDIFICO # 3 ZONA #7",
+   "area": "Edificio # 3 nvl 1 3109/3108 (0113)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "31887874",
+   "numero": "0-113"
+  },
+  {
+   "n": 160,
+   "zona": "EDIFICO # 3 ZONA #7",
+   "area": "Edificio # 3 nvl 1 3107/3106 (0062)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-062"
+  },
+  {
+   "n": 161,
+   "zona": "EDIFICO # 3 ZONA #7",
+   "area": "Edificio #3 nvl 2 3208/3209 (0158)",
+   "marca": "kidde yanes",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-158"
+  },
+  {
+   "n": 162,
+   "zona": "EDIFICO # 3 ZONA #7",
+   "area": "Edificio # 3 nvl 2 3206/3207 (0018)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-018"
+  },
+  {
+   "n": 163,
+   "zona": "EDIFICO # 3 ZONA #7",
+   "area": "Edificio # 3 nvl 3 3309/3308",
+   "marca": "TOTAL",
+   "tipo": "CO₂",
+   "capacidad": "5",
+   "serie": "481173",
+   "numero": "R-58"
+  },
+  {
+   "n": 164,
+   "zona": "EDIFICO # 3 ZONA #7",
+   "area": "Edificio # 3 nvl 3 3307/3306 (0183)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "31868375",
+   "numero": "0-183"
+  },
+  {
+   "n": 165,
+   "zona": "EDIFICO # 3 ZONA #7",
+   "area": "Edificio # 3 nvl 4 3409/3408 (0094)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "839927",
+   "numero": "0-094"
+  },
+  {
+   "n": 166,
+   "zona": "EDIFICO # 3 ZONA #7",
+   "area": "Edificio # 3 nvl 4 3406/3407 (0081)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-081"
+  },
+  {
+   "n": 167,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 1 4107/4106 (0152)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-152"
+  },
+  {
+   "n": 168,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 1 4109/4108 (0002)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "745688",
+   "numero": "0-002"
+  },
+  {
+   "n": 169,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 2 4209/4208 (0089)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "36693",
+   "numero": "0-089"
+  },
+  {
+   "n": 170,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 2 4207/4206 (0209)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-209"
+  },
+  {
+   "n": 171,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 3 4309/4308 (0161)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-161"
+  },
+  {
+   "n": 172,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 3 4306/4307 (0169)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-169"
+  },
+  {
+   "n": 173,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 4 4408/4409 (0085)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-085"
+  },
+  {
+   "n": 174,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 4 4406/4407 (0164)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "4004",
+   "numero": "0-164"
+  },
+  {
+   "n": 175,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 5 4509/4508 (0096)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-096"
+  },
+  {
+   "n": 176,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4nvl 5 4507/4506 (0057)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-057"
+  },
+  {
+   "n": 177,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 6 4609/4608 (3188)",
+   "marca": "ABRO",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "3188"
+  },
+  {
+   "n": 178,
+   "zona": "EDIFICIO # 4 ZONA #7",
+   "area": "Edificio # 4 nvl 6 4607/4606 (0103)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-103"
+  },
+  {
+   "n": 179,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 1 5105/5104 (0133)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-133"
+  },
+  {
+   "n": 180,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 1 5113/5112 (0188)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "31887872",
+   "numero": "0-188"
+  },
+  {
+   "n": 181,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 1 5121/5120 (0278)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-278"
+  },
+  {
+   "n": 182,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 1 5128/5127 (00163)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-0163"
+  },
+  {
+   "n": 183,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 1 5134/5133 (0170)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-170"
+  },
+  {
+   "n": 184,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 2 5234/5233 (0208)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-208"
+  },
+  {
+   "n": 185,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 2 5228/5227 (0144)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "839628",
+   "numero": "0-144"
+  },
+  {
+   "n": 186,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 2 5223/5222 (0199)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-199"
+  },
+  {
+   "n": 187,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 2 5213/5212 (0034)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "443488",
+   "numero": "0-034"
+  },
+  {
+   "n": 188,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 2 5205/5204 (0048)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "405108",
+   "numero": "0-048"
+  },
+  {
+   "n": 189,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 3 5305/5304 (0079)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-079"
+  },
+  {
+   "n": 190,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 3 5313/5312 (0131)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "8393",
+   "numero": "0-131"
+  },
+  {
+   "n": 191,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 3 5321/5320 (0201)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "400162",
+   "numero": "0-201"
+  },
+  {
+   "n": 192,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 3 5328/5327 (0270)",
+   "marca": "Kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-270"
+  },
+  {
+   "n": 193,
+   "zona": "EDIFICIO #5 ZONA #8",
+   "area": "Edificio # 5 nvl 3 5334/5333 (00156)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "8625",
+   "numero": "0-0156"
+  },
+  {
+   "n": 194,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Tanque de Gas Food Court (5471)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "23235471",
+   "numero": "5471"
+  },
+  {
+   "n": 195,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Tanque de Gas Food Court (2323)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "2323"
+  },
+  {
+   "n": 196,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Tanque de Gas Food Court (0183)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "192937",
+   "numero": "0-183"
+  },
+  {
+   "n": 197,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Food Court Cocina (274)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "S/S",
+   "numero": "0-274"
+  },
+  {
+   "n": 198,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Food Court Cocina (00148)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "345727",
+   "numero": "0-0148"
+  },
+  {
+   "n": 199,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Food Court Restaurant (0033)",
+   "marca": "Exain",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-033"
+  },
+  {
+   "n": 200,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Food Court Restaurant (0151)",
+   "marca": "Exain",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-151"
+  },
+  {
+   "n": 201,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Food Court Restaurant (0119)",
+   "marca": "Exain",
+   "tipo": "ABC",
+   "capacidad": "12",
+   "serie": "S/S",
+   "numero": "0-119"
+  },
+  {
+   "n": 202,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Food Court Restaurant (0093)",
+   "marca": "Exain",
+   "tipo": "ABC",
+   "capacidad": "13",
+   "serie": "S/S",
+   "numero": "0-093"
+  },
+  {
+   "n": 203,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Restaurante Thai (0071)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "9928",
+   "numero": "0-071"
+  },
+  {
+   "n": 204,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Bar Thai (0129)",
+   "marca": "Exain",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-129"
+  },
+  {
+   "n": 205,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "CEVICHERIA",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "00128",
+   "numero": ""
+  },
+  {
+   "n": 206,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Cocina Thai",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "415776",
+   "numero": ""
+  },
+  {
+   "n": 207,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Lobby # 2 (2509)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "2509"
+  },
+  {
+   "n": 208,
+   "zona": "FOOD CURT , RESTAURANTE TAI , BAR ZONA #9",
+   "area": "Lobby # 2 (0092)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-092"
+  },
+  {
+   "n": 209,
+   "zona": "GENERADORES ZONA #10",
+   "area": "Tanque GLP (36638)",
+   "marca": "CENTURY",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "36638"
+  },
+  {
+   "n": 210,
+   "zona": "GENERADORES ZONA #10",
+   "area": "Tanque GLP (341512)",
+   "marca": "CENTURY",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "341512"
+  },
+  {
+   "n": 211,
+   "zona": "GENERADORES ZONA #10",
+   "area": "Tanque GLP (161)",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-161"
+  },
+  {
+   "n": 212,
+   "zona": "GENERADORES ZONA #10",
+   "area": "Tanque GLP (0266)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "192380",
+   "numero": "0-266"
+  },
+  {
+   "n": 213,
+   "zona": "GENERADORES ZONA #10",
+   "area": "GENERADOR 2 (9014)",
+   "marca": "Kidde Y.",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "9014",
+   "numero": "B-36"
+  },
+  {
+   "n": 214,
+   "zona": "GENERADORES ZONA #10",
+   "area": "GENERADOR 2 (0172)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "56198",
+   "numero": "0-172"
+  },
+  {
+   "n": 215,
+   "zona": "GENERADORES ZONA #10",
+   "area": "GENERADOR 2 (0248)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "247617",
+   "numero": "0-248"
+  },
+  {
+   "n": 216,
+   "zona": "GENERADORES ZONA #10",
+   "area": "GENERADOR 2 (0173)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "91453",
+   "numero": "0-173"
+  },
+  {
+   "n": 217,
+   "zona": "GENERADORES ZONA #10",
+   "area": "GENERADOR 2 (0247)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "247643",
+   "numero": "0-247"
+  },
+  {
+   "n": 218,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "Almacen la leona (0117)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-117"
+  },
+  {
+   "n": 219,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "Almacen la leona (0072)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-072"
+  },
+  {
+   "n": 220,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "Almacen la leona (0181)",
+   "marca": "BADGER",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "56180",
+   "numero": "0-181"
+  },
+  {
+   "n": 221,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "Almacen la leona (0037)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-037"
+  },
+  {
+   "n": 222,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "Almacen la leona (0009)",
+   "marca": "kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "745672",
+   "numero": "0-009"
+  },
+  {
+   "n": 223,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "Entrada mantenimiento (091)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "496643",
+   "numero": "0-91"
+  },
+  {
+   "n": 224,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "Mantenimiento (0002)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "247605",
+   "numero": "0-002"
+  },
+  {
+   "n": 225,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "taller de soldadura (0111)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "400166",
+   "numero": "0-111"
+  },
+  {
+   "n": 226,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "taller de electricidad (0066)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "717211",
+   "numero": "0-066"
+  },
+  {
+   "n": 227,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "taller de electricidad (4055)",
+   "marca": "Extin flam",
+   "tipo": "ABC",
+   "capacidad": "125",
+   "serie": "S/S",
+   "numero": "4055"
+  },
+  {
+   "n": 228,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "taller de A/C (0181)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "56180",
+   "numero": "0-181"
+  },
+  {
+   "n": 229,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "Taller de fontaneria (0102)",
+   "marca": "amerex",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "461984",
+   "numero": "0-102"
+  },
+  {
+   "n": 230,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "Taller de electromecanica (0231)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "358936",
+   "numero": "0-231"
+  },
+  {
+   "n": 231,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "RENTOKIL (0105)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-105"
+  },
+  {
+   "n": 232,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "servicios sanitarios mtto. (0227)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "56175",
+   "numero": "0-227"
+  },
+  {
+   "n": 233,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "BODEGA LIQUIDOS INFLAMABLES (0069)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "359091",
+   "numero": "0-069"
+  },
+  {
+   "n": 234,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "CARPINTERIA (0138)",
+   "marca": "CENTURY",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-138"
+  },
+  {
+   "n": 235,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "CARPINTERIA (0015)",
+   "marca": "Kidde",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "13108430",
+   "numero": "0-015"
+  },
+  {
+   "n": 236,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "BODEGA DE PINTURAS (0137)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "443485",
+   "numero": "0-137"
+  },
+  {
+   "n": 237,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "BODEGA DE QUIMICOS (0041)",
+   "marca": "Badger",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "643288",
+   "numero": "0-041"
+  },
+  {
+   "n": 238,
+   "zona": "MANTENIMIENTO Y TALLERES ZONA #11",
+   "area": "lactancia materna",
+   "marca": "Century",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "s/s",
+   "numero": ""
+  },
+  {
+   "n": 239,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0042)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "141971",
+   "numero": "0-042"
+  },
+  {
+   "n": 240,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (653037)",
+   "marca": "KIDDE",
+   "tipo": "CO₂",
+   "capacidad": "5",
+   "serie": "653037",
+   "numero": "653037"
+  },
+  {
+   "n": 241,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0276)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "55409",
+   "numero": "0-276"
+  },
+  {
+   "n": 242,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0173)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "576077",
+   "numero": "0-173"
+  },
+  {
+   "n": 243,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0139)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "115143",
+   "numero": "0-139"
+  },
+  {
+   "n": 244,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0238)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "247637",
+   "numero": "0-238"
+  },
+  {
+   "n": 245,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0157)",
+   "marca": "CENTURY",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-157"
+  },
+  {
+   "n": 246,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0129)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-129"
+  },
+  {
+   "n": 247,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0171)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-171"
+  },
+  {
+   "n": 248,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0217)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-217"
+  },
+  {
+   "n": 249,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (419795)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "S/S",
+   "numero": "419795"
+  },
+  {
+   "n": 250,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "56802",
+   "numero": ""
+  },
+  {
+   "n": 251,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (345730)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "S/S",
+   "numero": "345730"
+  },
+  {
+   "n": 252,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (814508)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "814508",
+   "numero": "R-19"
+  },
+  {
+   "n": 253,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (271)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "814509",
+   "numero": "0-271"
+  },
+  {
+   "n": 254,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0088)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-088"
+  },
+  {
+   "n": 255,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0160)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-160"
+  },
+  {
+   "n": 256,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (97654417)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "97654417",
+   "numero": "97654417"
+  },
+  {
+   "n": 257,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (345730)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "345730",
+   "numero": "R-27"
+  },
+  {
+   "n": 258,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (419795)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "2.5 GL",
+   "serie": "S/S",
+   "numero": "419795"
+  },
+  {
+   "n": 259,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (3802)",
+   "marca": "Century",
+   "tipo": "ABC",
+   "capacidad": "20",
+   "serie": "S/S",
+   "numero": "3802"
+  },
+  {
+   "n": 260,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0225)",
+   "marca": "Kidde Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-225"
+  },
+  {
+   "n": 261,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0125)",
+   "marca": "Exain",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-125"
+  },
+  {
+   "n": 262,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0164)",
+   "marca": "Exain",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-164"
+  },
+  {
+   "n": 263,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0106)",
+   "marca": "Exain",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "0-106"
+  },
+  {
+   "n": 264,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0263)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "91495",
+   "numero": "0-263"
+  },
+  {
+   "n": 265,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (643037)",
+   "marca": "Kidde",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "643037",
+   "numero": "643037"
+  },
+  {
+   "n": 266,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0244)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "247633",
+   "numero": "0-244"
+  },
+  {
+   "n": 267,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (0010)",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "574068",
+   "numero": "0-010"
+  },
+  {
+   "n": 268,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA (3802)",
+   "marca": "Badger",
+   "tipo": "K",
+   "capacidad": "6  LTS",
+   "serie": "814514",
+   "numero": "R-39"
+  },
+  {
+   "n": 269,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "*000204",
+   "numero": "R-40"
+  },
+  {
+   "n": 270,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "265",
+   "numero": "R-41"
+  },
+  {
+   "n": 271,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "6 LTS",
+   "serie": "00020",
+   "numero": ""
+  },
+  {
+   "n": 272,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "6 LTS",
+   "serie": "*00051",
+   "numero": ""
+  },
+  {
+   "n": 273,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "6 LTS",
+   "serie": "*00022",
+   "numero": "R-44"
+  },
+  {
+   "n": 274,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "6 LTS",
+   "serie": "*000100",
+   "numero": "R-45"
+  },
+  {
+   "n": 275,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "EXAIN",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": "R-47"
+  },
+  {
+   "n": 276,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Total",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "515152",
+   "numero": "R-48"
+  },
+  {
+   "n": 277,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Total",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "232423",
+   "numero": "R-49"
+  },
+  {
+   "n": 278,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Total",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "515345",
+   "numero": "R-50"
+  },
+  {
+   "n": 279,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "397",
+   "numero": "R-51"
+  },
+  {
+   "n": 280,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "000067",
+   "numero": ""
+  },
+  {
+   "n": 281,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "6LT",
+   "serie": "00065",
+   "numero": ""
+  },
+  {
+   "n": 282,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "S/S",
+   "numero": ""
+  },
+  {
+   "n": 283,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "TOTAL",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "516984",
+   "numero": "R-55"
+  },
+  {
+   "n": 284,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "KIDDE",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "593728",
+   "numero": "R-56"
+  },
+  {
+   "n": 285,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Badger",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "190102",
+   "numero": "R-57"
+  },
+  {
+   "n": 286,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "KIDDE",
+   "tipo": "CO₂",
+   "capacidad": "5",
+   "serie": "09359961",
+   "numero": "R-59"
+  },
+  {
+   "n": 287,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "SALON TULUM",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "74",
+   "numero": ""
+  },
+  {
+   "n": 288,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "SISTEMAS DEADESAL",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "58",
+   "numero": ""
+  },
+  {
+   "n": 289,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "FILTRO 1",
+   "marca": "KIDDE Y.",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "",
+   "numero": ""
+  },
+  {
+   "n": 290,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "KIDDE",
+   "tipo": "CO₂",
+   "capacidad": "5",
+   "serie": "959180",
+   "numero": ""
+  },
+  {
+   "n": 291,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Century",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "354704",
+   "numero": "0-187"
+  },
+  {
+   "n": 292,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "KIDDE",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "",
+   "numero": "39898"
+  },
+  {
+   "n": 293,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "KIDDE Y",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "",
+   "numero": "256"
+  },
+  {
+   "n": 294,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "BADGER",
+   "tipo": "K",
+   "capacidad": "1.5",
+   "serie": "814514",
+   "numero": "R-30"
+  },
+  {
+   "n": 295,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "1.5",
+   "serie": "76",
+   "numero": "R-61"
+  },
+  {
+   "n": 296,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "60",
+   "numero": "0-263"
+  },
+  {
+   "n": 297,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "BADGER",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "576077",
+   "numero": ""
+  },
+  {
+   "n": 298,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "1.5",
+   "serie": "74",
+   "numero": ""
+  },
+  {
+   "n": 299,
+   "zona": "EXTINTORES DE RESERVA",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "K",
+   "capacidad": "6 LTS",
+   "serie": "22",
+   "numero": ""
+  },
+  {
+   "n": 300,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "GENERADOR EXPO CENTER #1",
+   "marca": "",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "",
+   "numero": ""
+  },
+  {
+   "n": 301,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "GENERADOR EXO CENTER #2",
+   "marca": "",
+   "tipo": "CO₂",
+   "capacidad": "10",
+   "serie": "",
+   "numero": ""
+  },
+  {
+   "n": 302,
+   "zona": "OFICINAS , BODEGAS Y CALDERAS ZONA #5",
+   "area": "RESERVA",
+   "marca": "Centinella",
+   "tipo": "ABC",
+   "capacidad": "10",
+   "serie": "265",
+   "numero": ""
+  }
+ ]
+}

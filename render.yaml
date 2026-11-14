@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: sos-fire-extintores
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: FIREBASE_CONFIG   # la configuración web de Firebase (la misma de la otra app)
+        sync: false
+      - key: ADMIN_EMAILS      # correo(s) del administrador, separados por coma
+        sync: false
+    headers:
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache

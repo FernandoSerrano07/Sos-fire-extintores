@@ -1,0 +1,101 @@
+rules_version = '2';
+// Reglas de Firestore para el proyecto de Firebase de SOS FIRE.
+// Incluye las dos apps: detectores/alarmas/lámparas (SISTEMA-SOS-FIRE) y extintores (esta).
+// Copie TODO este texto en Firebase -> Firestore Database -> Reglas -> Publicar.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ================== APP DE DETECTORES, ALARMAS Y LÁMPARAS ==================
+    function logueado() { return request.auth != null; }
+
+    // Puntero a la inspección activa
+    match /app/actual {
+      allow read: if logueado();
+      allow write: if logueado() && request.resource.data.keys().hasOnly(['id']);
+    }
+
+    // Cuánto tiempo se guardan los reportes
+    match /app/config {
+      allow read: if logueado();
+      allow write: if logueado() && request.resource.data.retencionMeses is number;
+    }
+
+    // Equipos agregados desde la app (no estaban en el Excel)
+    match /catalogo/{equipo} {
+      allow read: if logueado();
+      allow write: if logueado()
+        && request.resource.data.tid in ['DET', 'ALA', 'LAM']
+        && request.resource.data.n is number
+        && request.resource.data.loc is string && request.resource.data.loc.size() > 0;
+    }
+
+    // Datos del formato (fecha, nombres, firmas) y resumen para la lista de reportes
+    match /inspecciones/{insp} {
+      allow read, write: if logueado();
+
+      // Un documento por equipo: DET_12, ALA_3, LAM_150 ...
+      match /equipos/{equipo} {
+        allow read, delete: if logueado();
+        allow write: if logueado()
+          && request.resource.data.tid in ['DET', 'ALA', 'LAM']
+          && request.resource.data.n is number
+          && request.resource.data.c is list && request.resource.data.c.size() == 4;
+      }
+    }
+
+
+    // ================== APP DE EXTINTORES ==================
+    // Correo(s) del administrador principal: cámbielo por el suyo antes de publicar.
+    function adminPorCorreo() {
+      return logueado() && request.auth.token.email in ['CORREO_DEL_ADMIN@ejemplo.com'];
+    }
+    function tienePerfil() {
+      return logueado() && exists(/databases/$(database)/documents/ext_usuarios/$(request.auth.uid));
+    }
+    function perfil() {
+      return get(/databases/$(database)/documents/ext_usuarios/$(request.auth.uid)).data;
+    }
+    function esAdmin() {
+      return adminPorCorreo() || (tienePerfil() && perfil().rol == 'admin' && perfil().activo == true);
+    }
+    function puedeTrabajar() {
+      return esAdmin() || (tienePerfil() && perfil().activo == true);
+    }
+
+    // Técnicos y administradores: solo el administrador los crea o desactiva
+    match /ext_usuarios/{id} {
+      allow read: if logueado();
+      allow create: if esAdmin();
+      allow update: if esAdmin()
+        || (request.auth.uid == id && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['debeCambiar']));
+      allow delete: if esAdmin();
+    }
+
+    // Clientes (proyectos) y sus extintores: los técnicos activos pueden crearlos y editarlos
+    match /ext_clientes/{cid} {
+      allow read, create, update: if puedeTrabajar();
+      allow delete: if esAdmin();
+      match /extintores/{eid} {
+        allow read, write: if puedeTrabajar();
+      }
+    }
+
+    // Visitas (cada día de trabajo en un cliente) y la revisión de cada extintor
+    match /ext_visitas/{vid} {
+      allow read, create, update: if puedeTrabajar();
+      allow delete: if esAdmin();
+      match /revisiones/{eid} {
+        allow read, write: if puedeTrabajar();
+      }
+    }
+
+    match /ext_config/{d} {
+      allow read: if logueado();
+      allow write: if esAdmin();
+    }
+
+    // Todo lo demás, cerrado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
