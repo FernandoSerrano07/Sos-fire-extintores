@@ -11,9 +11,10 @@ const lib = (p) => read(`node_modules/${p}`);
 function leerConfigNube() {
   let raw = (process.env.FIREBASE_CONFIG || '').trim();
   if (!raw) { console.log('  Firebase: NO configurado (la app mostrará cómo conectarlo)'); return null; }
+  if (/rules_version|match \/databases/.test(raw)) throw new Error('FIREBASE_CONFIG tiene las REGLAS de Firestore. Ahí va el bloque "const firebaseConfig = { apiKey: ... }" (Firebase → Configuración del proyecto → Tus apps → Config).');
   raw = raw.replace(/^[^{]*/, '').replace(/[^}]*$/, ''); // quita "const firebaseConfig =" y ";"
   let cfg;
-  try { cfg = JSON.parse(raw); } catch { cfg = Function(`"use strict"; return (${raw});`)(); }
+  try { cfg = JSON.parse(raw); } catch { try { cfg = Function(`"use strict"; return (${raw});`)(); } catch { throw new Error('FIREBASE_CONFIG no es válido. Pegue el bloque "const firebaseConfig = { apiKey: ... }" tal cual lo da Firebase.'); } }
   for (const k of ['apiKey', 'authDomain', 'projectId', 'appId']) if (!cfg[k]) throw new Error(`FIREBASE_CONFIG no tiene "${k}"`);
   console.log(`  Firebase: proyecto "${cfg.projectId}"${cfg.emulator ? ' (EMULADOR)' : ''}`);
   return cfg;
