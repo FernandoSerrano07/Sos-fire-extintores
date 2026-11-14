@@ -30,6 +30,22 @@ const ICON = {
   rep: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 17v-4"/><path d="M12 17v-6"/><path d="M15 17v-2"/></svg>',
   pin: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C90012" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4.5 9.5 10 6 10.5l7.5 7.5.5-3.5L19.5 9z"/><path d="M9 15l-4.5 4.5"/><path d="M14.5 4 20 9.5"/></svg>',
 };
+const sv = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+Object.assign(ICON, {
+  grid: sv('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'),
+  users: sv('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  phone: sv('<rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/>'),
+  live: sv('<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'),
+  folder: sv('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+  alert: sv('<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>'),
+  cal: sv('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
+  arch: sv('<rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>'),
+  clock: sv('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+  db: sv('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'),
+  pinS: sv('<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>'),
+  check: sv('<path d="M20 6 9 17l-5-5"/>'),
+  wrench: sv('<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'),
+});
 const LOGO = 'data:image/png;base64,' + LOGO_B64;
 
 function toast(msg, undo) {
@@ -569,11 +585,14 @@ async function formExtintor(eid, sugerencia = '') {
 /* ======================= 6) Administrador ======================= */
 function headAdm(on) {
   return `<header class="ah"><div class="in">
-    <div class="l"><img src="${LOGO}" alt="SOS FIRE"><span class="tag">ADMINISTRADOR</span></div>
-    <nav class="anav"><button class="${on === 'p' ? 'on' : ''}" data-act="go" data-h="#/">Proyectos</button><button class="${on === 't' ? 'on' : ''}" data-act="go" data-h="#/a/tecnicos">Técnicos</button><button data-act="go" data-h="#/t">Vista del técnico</button></nav>
-    <div class="inline">${botonInstalar('btn sm')}${netPill()}<span class="muted" style="font-size:13px">${esc(yo())}</span><button class="btn sm ghost" data-act="salir">Salir</button></div>
+    <div class="l"><img src="${LOGO}" alt="SOS FIRE"><span class="tag">PANEL ADMINISTRADOR</span></div>
+    <nav class="anav"><button class="${on === 'p' ? 'on' : ''}" data-act="go" data-h="#/">${ICON.grid}Proyectos</button><button class="${on === 't' ? 'on' : ''}" data-act="go" data-h="#/a/tecnicos">${ICON.users}Técnicos</button><button data-act="go" data-h="#/t">${ICON.phone}Vista del técnico</button></nav>
+    <div class="inline">${botonInstalar('btn sm')}${netPill()}<div class="me">${avatar(yo(), Cloud.uid())}<div><b>${esc(yo())}</b><small>Administrador</small></div></div><button class="btn sm ghost" data-act="salir">Salir</button></div>
   </div></header>`;
 }
+const kpiCard = (ic, cls, label, val, small = '', extra = '', acc = '') => `<div class="kpi"${acc ? ` style="--acc:${acc}"` : ''}><div class="ic ${cls}">${ICON[ic]}</div><span>${label}</span><b>${val}</b>${small ? `<small>${small}</small>` : ''}${extra}</div>`;
+const ring = (pct, color) => { const r = 32, c = 2 * Math.PI * r; return `<div class="ring"><svg viewBox="0 0 76 76"><circle cx="38" cy="38" r="${r}" fill="none" stroke="#EEF0F3" stroke-width="7"/><circle cx="38" cy="38" r="${r}" fill="none" stroke="${color}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(c * pct) / 100} ${c}"/></svg><b>${pct}%</b></div>`; };
+const logoProy = (c) => { const [bg, fg] = avColor(c.id || c.nombre); return `<span class="lg" style="background:${bg};color:${fg}">${esc(iniciales(c.nombre))}</span>`; };
 const tecChips = (v) => {
   const l = Object.entries((v && v.tecnicos) || {}).sort((a, b) => (b[1].visto || 0) - (a[1].visto || 0));
   return l.length ? l.map(([u, t]) => `<span class="chipT">${avatar(t.nombre, u)}${esc(t.nombre)}<span class="dot" style="background:${online(t.visto) ? 'var(--ok)' : '#C9C9C9'}" title="${online(t.visto) ? 'En línea' : 'Desconectado'}"></span></span>`).join('') : '<span class="muted" style="font-size:13px">Nadie ha entrado todavía</span>';
@@ -593,46 +612,49 @@ function renderAHome() {
     .filter((c) => !ui.hmes || ((c.ultimaVisita && c.ultimaVisita.fecha) || '').startsWith(ui.hmes))
     .sort((a, b) => ((b.ultimaVisita || {}).t || 0) - ((a.ultimaVisita || {}).t || 0));
   const meses = [...new Set(S.clientes.filter((c) => !c.fijado && !mes.includes(c) && c.ultimaVisita).map((c) => c.ultimaVisita.fecha.slice(0, 7)))].sort().reverse();
-  const cardFijado = (c) => {
+  const nMes = new Set([...mesIds, ...mes.map((c) => c.id)]).size;
+  const extHoy = S.mes.filter((v) => v.fecha === hoy).reduce((a, v) => a + ((v.resumen && v.resumen.done) || 0), 0);
+
+  const card = (c) => {
     const v = visitaAbiertaDe(c.id); const ult = v || visitasMesDe(c.id)[0]; const r = ult && ult.resumen;
-    return `<button class="acard" data-act="go" data-h="#/a/c/${c.id}">
-      <div class="h"><div><div class="n">${esc(c.nombre)}</div><div class="d">${r ? r.total + ' extintores · ' : ''}${esc(frecTxt(c))}${c.lugar && c.lugar !== c.nombre ? ' · ' + esc(c.lugar) : ''}</div></div>
-        ${v ? '<span class="pill ok">En curso</span>' : c.frecuencia === 'semanal' ? `<span class="pill pend">Próxima: ${DIAS[c.dia]}</span>` : '<span class="pill pend">Sin visita hoy</span>'}</div>
-      <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:13px"><b>${v ? 'Avance de hoy' : ult ? 'Última visita · ' + fmtFecha(ult.fecha).slice(0, 5) : 'Sin visitas este mes'}</b><b>${r ? `${r.done} / ${r.total} · ${Math.round((r.done / Math.max(1, r.total)) * 100)} %` : ''}</b></div>${barRes(r)}</div>
-      <div style="display:flex;flex-direction:column;gap:7px"><span style="font-size:12px;font-weight:700" class="muted">${v ? 'Técnicos en este proyecto' : 'Técnicos de la última visita'}</span><div class="inline">${tecChips(ult)}</div></div>
-      ${r && (r.bad || r.pronto) ? `<div class="inline">${r.bad ? `<span class="pill bad" style="font-size:12.5px;padding:4px 10px">${r.bad} con falla</span>` : ''}${r.pronto ? `<span class="pill warn" style="font-size:12.5px;padding:4px 10px">${r.pronto} recargas por vencer</span>` : ''}</div>` : ''}
-      <div class="f"><span>${ult && ult.ultimaAct ? esc(ult.ultimaAct.texto) + ' · ' + hace(ult.ultimaAct.t) : 'Sin actividad hoy'}</span><b>Ver ›</b></div>
-    </button>`;
+    const pct = r ? Math.round((r.done / Math.max(1, r.total)) * 100) : 0;
+    const st = v ? '<span class="stt live"><i></i>En curso</span>' : ult ? '<span class="stt done"><i></i>Terminado</span>' : c.frecuencia === 'semanal' ? `<span class="stt wait"><i></i>Próxima: ${DIAS[c.dia]}</span>` : '<span class="stt done"><i></i>Sin visita</span>';
+    const tecs = Object.entries((ult && ult.tecnicos) || {}).sort((a, b) => (b[1].visto || 0) - (a[1].visto || 0));
+    const stack = tecs.slice(0, 5).map(([u, t]) => avatar(t.nombre, u).replace('</span>', `${online(t.visto) && v ? '<i class="on"></i>' : ''}</span>`)).join('');
+    const meta = [r ? `${r.total} extintores` : '', frecTxt(c), c.lugar && c.lugar !== c.nombre ? c.lugar : ''].filter(Boolean).map(esc).join(' · ');
+    return `<div class="pc" data-act="go" data-h="#/a/c/${c.id}" role="link" tabindex="0">
+      <div class="tp">${logoProy(c)}<div class="tt"><b>${esc(c.nombre)}</b><span>${meta}</span></div>${st}</div>
+      <div class="mid">${ring(pct, r && r.bad ? '#C90012' : '#167C3A')}
+        <div class="stats"><div><small>Revisados</small><b>${r ? r.done : 0}<span style="font-size:12px;color:var(--mut);font-weight:500"> / ${r ? r.total : 0}</span></b></div>
+        <div class="r"><small>Con falla</small><b>${r ? r.bad : 0}</b></div><div class="a"><small>Por vencer</small><b>${r ? r.pronto || 0 : 0}</b></div></div></div>
+      <div class="team">${tecs.length ? `<div class="stack">${stack}</div><span>${esc(tecs.map(([, t]) => t.nombre.split(' ')[0]).join(', '))}</span>` : '<span>Sin técnicos asignados todavía</span>'}</div>
+      <div class="ft"><span class="act">${ICON.clock}${ult && ult.ultimaAct ? esc(ult.ultimaAct.texto) + ' · ' + hace(ult.ultimaAct.t) : ult ? 'Última visita ' + fmtFecha(ult.fecha) : 'Sin actividad'}</span>
+        <span class="go"><button class="pinb" data-act="fijar" data-id="${c.id}" title="${c.fijado ? 'Quitar de fijados' : 'Fijar arriba'}">${ICON.pinS}${c.fijado ? 'Desfijar' : 'Fijar'}</button><b>Ver detalle →</b></span></div>
+    </div>`;
   };
-  const filaMes = (c) => {
-    const v = visitaAbiertaDe(c.id) || visitasMesDe(c.id)[0]; const r = v && v.resumen;
-    const quien = v ? Object.values(v.tecnicos || {}).map((t) => t.nombre.split(' ')[0]).join(', ') : '';
-    return `<div class="mrow"><div class="i" data-act="go" data-h="#/a/c/${c.id}"><b>${esc(c.nombre)}${c.lugar ? ' · ' + esc(c.lugar) : ''}</b><span>Creado por ${esc(c.creadoPor || 'el administrador')} · ${c.creado ? new Date(c.creado).toLocaleDateString('es') : ''}</span></div>
-      <div class="p"><span>${r ? `${r.done} / ${r.total} · ${Math.round((r.done / Math.max(1, r.total)) * 100)} %` : 'Sin revisiones'}</span>${barRes(r, 8)}</div>
-      <span style="flex:none;font-size:13px;font-weight:700">${esc(quien || '—')}</span>
-      ${v && v.estado === 'en_curso' ? '<span class="pill ok">En curso</span>' : '<span class="pill pend">Terminado</span>'}
-      <button class="btn sm" data-act="fijar" data-id="${c.id}">Fijar</button></div>`;
-  };
+  const secH = (ic, cls, titulo, n, sub, extra = '') => `<div class="sech"><div class="t"><span class="ic ${cls}">${ICON[ic]}</span><h2>${titulo}</h2>${n != null ? `<span class="count">${n}</span>` : ''}<span class="sub" style="margin:0">${sub}</span></div>${extra}</div>`;
+  const fechaLarga = new Date().toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
+
   root.innerHTML = `<div class="adm">${headAdm('p')}<main class="am">
-    <div class="sech"><div><h1>Proyectos</h1><div class="sub">Los técnicos también pueden crear proyectos desde el teléfono. Aquí aparecen al instante.</div></div><button class="btn pri" data-act="go" data-h="#/nuevo">+ Nuevo proyecto</button></div>
+    <div class="sech"><div><div class="eyebrow">${esc(fechaLarga)}</div><h1>Proyectos</h1><div class="sub">Seguimiento en tiempo real de las inspecciones de extintores. Los proyectos que crean los técnicos aparecen al instante.</div></div><button class="btn pri" data-act="go" data-h="#/nuevo">+ Nuevo proyecto</button></div>
     <div class="kpis">
-      <div class="kpi"><span>En curso hoy</span><b>${S.activas.length}</b></div>
-      <div class="kpi"><span>Técnicos en campo</span><b>${tecOn.size}</b></div>
-      <div class="kpi"><span>Proyectos este mes</span><b>${new Set([...mesIds, ...mes.map((c) => c.id)]).size}</b></div>
-      <div class="kpi bad"><span>Fallas encontradas hoy</span><b>${fallasHoy}</b></div>
+      ${kpiCard('live', 'g', 'En curso hoy', S.activas.length, S.activas.length === 1 ? 'visita abierta' : 'visitas abiertas', '', S.activas.length ? '#167C3A' : '')}
+      ${kpiCard('users', 'b', 'Técnicos en campo', tecOn.size, 'conectados ahora')}
+      ${kpiCard('folder', 'v', 'Proyectos este mes', nMes, `${extHoy} extintores revisados hoy`)}
+      ${kpiCard('alert', 'r', 'Fallas encontradas hoy', fallasHoy, fallasHoy ? 'requieren atención' : 'sin novedades', '', fallasHoy ? '#C90012' : '')}
     </div>
     ${!S.clientes.length ? `<div class="box"><h2>Empecemos</h2><p class="sub" style="margin:0">Cargue Decameron Salinitas con sus ${DECAMERON.extintores.length} extintores de la hoja 2, o cree un proyecto nuevo.</p><div class="inline"><button class="btn pri" data-act="cargarDecameron">Cargar Decameron Salinitas</button><button class="btn" data-act="go" data-h="#/nuevo">Crear otro proyecto</button></div></div>` : ''}
-    ${fij.length ? `<section class="sec"><div class="sech"><div class="t">${ICON.pin}<h2>Fijados</h2><span class="sub">· clientes de visita frecuente, siempre arriba</span></div></div><div class="grid2">${fij.map(cardFijado).join('')}</div></section>` : ''}
-    <section class="sec"><div class="sech"><div class="t"><h2>Este mes · ${MESES[new Date().getMonth()]}</h2><span class="sub">· proyectos con visitas en el mes; el 1.º del próximo mes pasan al archivo</span></div></div>
-      <div class="tbl" style="overflow:hidden">${mes.length ? mes.map(filaMes).join('') : '<div class="mrow"><span class="muted">Todavía no hay otros proyectos este mes.</span></div>'}</div></section>
-    <section class="sec"><div class="sech"><div class="t"><h2>Archivo</h2><span class="sub">· todos los proyectos anteriores</span></div>
+    ${fij.length ? `<section class="sec">${secH('pinS', 'r', 'Fijados', fij.length, 'clientes de visita frecuente, siempre arriba')}<div class="gridP">${fij.map(card).join('')}</div></section>` : ''}
+    <section class="sec">${secH('cal', 'b', `Este mes · ${MESES[new Date().getMonth()]}`, mes.length, 'el 1.º del próximo mes pasan al archivo')}
+      <div class="gridP">${mes.map(card).join('')}<div class="pc add" data-act="go" data-h="#/nuevo" role="link" tabindex="0"><span class="lg">+</span>Nuevo proyecto</div></div></section>
+    <section class="sec"><div class="card2"><div class="hd">${secH('arch', 'n', 'Archivo', arch.length, 'proyectos anteriores').replace('class="sech"', 'class="sech" style="flex:1"')}
         <div class="inline"><label class="searchA">${ICON.search}<input id="aq" placeholder="Buscar cliente o lugar" value="${esc(ui.hq)}"></label>
         <select class="sm" id="ames" aria-label="Mes"><option value="">Todos los meses</option>${meses.map((m) => `<option value="${m}" ${ui.hmes === m ? 'selected' : ''}>${MESES[+m.slice(5) - 1]} ${m.slice(0, 4)}</option>`).join('')}</select></div></div>
       <div class="tbl"><table><thead><tr><th>Proyecto</th><th>Última visita</th><th>Frecuencia</th><th>Creado por</th><th style="text-align:right;padding-right:18px">Acciones</th></tr></thead><tbody>
-        ${arch.length ? arch.map((c) => `<tr><td><b>${esc(c.nombre)}</b>${c.lugar ? ' · ' + esc(c.lugar) : ''}</td><td>${c.ultimaVisita ? fmtFecha(c.ultimaVisita.fecha) : '—'}</td><td>${esc(frecTxt(c))}</td><td>${esc(c.creadoPor || '—')}</td><td style="text-align:right;padding-right:18px;white-space:nowrap"><button class="lnk" data-act="go" data-h="#/a/c/${c.id}">Ver</button> · <button class="lnk" data-act="fijar" data-id="${c.id}">Fijar</button></td></tr>`).join('') : `<tr><td colspan="5" class="muted">${q || ui.hmes ? 'No hay proyectos con ese filtro.' : 'El archivo está vacío.'}</td></tr>`}
-      </tbody></table></div></section>
-    <div class="box" style="flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between"><div><h2>Reportes guardados</h2><div class="sub">Las visitas terminadas se borran solas después de este plazo (los clientes y sus extintores no se borran).</div></div>
-      <select class="sm" id="aret">${[2, 3, 6, 12, 24].map((m) => `<option value="${m}" ${(S.config.retencionMeses || 6) === m ? 'selected' : ''}>Guardar ${m} meses</option>`).join('')}</select></div>
+        ${arch.length ? arch.map((c) => `<tr><td><div class="pn">${logoProy(c)}<div><b>${esc(c.nombre)}</b><small>${esc(c.lugar || '')}</small></div></div></td><td>${c.ultimaVisita ? fmtFecha(c.ultimaVisita.fecha) : '—'}</td><td>${esc(frecTxt(c))}</td><td>${esc(c.creadoPor || '—')}</td><td style="text-align:right;padding-right:18px;white-space:nowrap"><button class="pinb" data-act="fijar" data-id="${c.id}">${ICON.pinS}Fijar</button> <button class="btn sm" data-act="go" data-h="#/a/c/${c.id}">Ver</button></td></tr>`).join('') : `<tr><td colspan="5" class="muted" style="text-align:center;padding:28px">${q || ui.hmes ? 'No hay proyectos con ese filtro.' : 'El archivo está vacío. Los proyectos de meses anteriores aparecerán aquí.'}</td></tr>`}
+      </tbody></table></div></div></section>
+    <div class="box"><div class="setrow"><span class="ic n">${ICON.db}</span><div class="tx"><h2>Reportes guardados</h2><div class="sub">Las visitas terminadas se borran solas después de este plazo. Los clientes y sus extintores no se borran.</div></div>
+      <select class="sm" id="aret">${[2, 3, 6, 12, 24].map((m) => `<option value="${m}" ${(S.config.retencionMeses || 6) === m ? 'selected' : ''}>Guardar ${m} meses</option>`).join('')}</select></div></div>
   </main></div>`;
   const aq = $('aq'); aq.oninput = () => { ui.hq = aq.value; const p = aq.selectionStart; renderAHome(); const n = $('aq'); n.focus(); n.setSelectionRange(p, p); };
   $('ames').onchange = (e) => { ui.hmes = e.target.value; renderAHome(); };
@@ -676,11 +698,11 @@ function renderACliente(cid) {
         ${v ? `<button class="btn" data-act="go" data-h="#/v/${v.id}">Ver como técnico</button><button class="btn xl" data-act="xlsxA">⬇ Excel</button><button class="btn pri" data-act="pdfA">⬇ PDF</button>` : `<button class="btn pri" data-act="nuevaVisitaA">Iniciar visita de hoy</button>`}
       </div></div>
     ${v ? `<div class="kpis">
-      <div class="kpi"><span>Avance</span><b>${Math.round((r.done / Math.max(1, r.total)) * 100)} %</b>${barRes(r, 8)}</div>
-      <div class="kpi"><span>Revisados</span><b>${r.done} <span style="font-size:16px;color:var(--muted)">/ ${r.total}</span></b></div>
-      <div class="kpi"><span>Pendientes</span><b>${r.total - r.done}</b></div>
-      <div class="kpi bad"><span>Con falla</span><b>${r.bad}</b></div>
-      <div class="kpi warn"><span>Recarga por vencer</span><b>${r.pronto}</b></div></div>
+      ${kpiCard('live', 'g', 'Avance', Math.round((r.done / Math.max(1, r.total)) * 100) + ' %', '', barRes(r, 8))}
+      ${kpiCard('check', 'b', 'Revisados', `${r.done} <span style="font-size:16px;color:var(--mut);font-weight:500">/ ${r.total}</span>`)}
+      ${kpiCard('clock', 'n', 'Pendientes', r.total - r.done)}
+      ${kpiCard('alert', 'r', 'Con falla', r.bad, '', '', r.bad ? '#C90012' : '')}
+      ${kpiCard('wrench', 'a', 'Recarga por vencer', r.pronto, '', '', r.pronto ? '#B25E00' : '')}</div>
     <div class="cols"><div class="main"><div class="box"><h2>Avance por zona</h2><div class="zgrid">${zonas.map((z) => `<span style="font-weight:600">${esc(zonaCorta(z.z))}</span><div class="bar"><i style="width:${(z.ok / z.t) * 100}%;background:var(--ok)"></i><i style="width:${(z.bad / z.t) * 100}%;background:var(--red)"></i></div><b style="${z.d ? '' : 'color:var(--muted)'}">${z.d} / ${z.t}</b>`).join('') || '<span class="muted">Sin extintores todavía.</span>'}</div></div></div>
       <div class="side">
         <div class="box"><h2>Técnicos ${v.estado === 'en_curso' ? 'en campo' : 'de la visita'}</h2>${Object.entries(v.tecnicos || {}).map(([u, t]) => `<div class="trow">${avatar(t.nombre, u)}<div class="i"><b>${esc(t.nombre)}</b><span>${porTec[u] || 0} revisados</span></div><span class="pill ${online(t.visto) ? 'ok' : 'pend'}">${online(t.visto) ? 'En línea' : 'Desconectado'}</span></div>`).join('') || '<span class="muted">Nadie ha entrado todavía.</span>'}</div>
