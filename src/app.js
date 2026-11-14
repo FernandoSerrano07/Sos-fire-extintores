@@ -271,6 +271,7 @@ function renderTHome() {
       <label class="search">${ICON.search}<input id="hq" type="search" placeholder="Buscar cliente o lugar" value="${esc(ui.hq)}" autocomplete="off"></label>
     </div>
     <div class="pad">
+      ${bannerInstalar()}
       ${sec('Toca hoy', hoy, true)}${sec('Fijados', fij)}${sec('Este mes', mes)}${sec('Otros proyectos', otros)}
       ${!cs.length ? `<div class="empty">${q ? 'No se encontró ese cliente.' : 'Todavía no hay proyectos.'}<br>Créalo con el botón de abajo.</div>` : ''}
       ${!q && S.clientes.length > hoy.length + fij.length + mes.length ? '<div class="muted" style="font-size:12.5px;text-align:center">Los proyectos de meses anteriores aparecen al buscarlos.</div>' : ''}
@@ -570,7 +571,7 @@ function headAdm(on) {
   return `<header class="ah"><div class="in">
     <div class="l"><img src="${LOGO}" alt="SOS FIRE"><span class="tag">ADMINISTRADOR</span></div>
     <nav class="anav"><button class="${on === 'p' ? 'on' : ''}" data-act="go" data-h="#/">Proyectos</button><button class="${on === 't' ? 'on' : ''}" data-act="go" data-h="#/a/tecnicos">Técnicos</button><button data-act="go" data-h="#/t">Vista del técnico</button></nav>
-    <div class="inline">${netPill()}<span class="muted" style="font-size:13px">${esc(yo())}</span><button class="btn sm ghost" data-act="salir">Salir</button></div>
+    <div class="inline">${botonInstalar('btn sm')}${netPill()}<span class="muted" style="font-size:13px">${esc(yo())}</span><button class="btn sm ghost" data-act="salir">Salir</button></div>
   </div></header>`;
 }
 const tecChips = (v) => {
@@ -823,9 +824,32 @@ async function exportPdf({ c, v, ext, rev }) {
   descargar(nombreArchivo(c, v, 'pdf'), doc.output('blob'));
 }
 
+/* ======================= Instalar como app (teléfono y computadora) ======================= */
+let promptInstalar = null;
+const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const instalada = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const puedeInstalar = () => !instalada() && (!!promptInstalar || esIOS);
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); promptInstalar = e; if (S.me) redraw(); else pintarBotonLogin(); });
+window.addEventListener('appinstalled', () => { promptInstalar = null; toast('App instalada. Ábrala desde su pantalla de inicio o escritorio.'); redraw(); });
+function botonInstalar(cls = 'btn sm') { return puedeInstalar() ? `<button class="${cls}" data-act="instalar">⬇ Instalar app</button>` : ''; }
+function bannerInstalar() {
+  if (!puedeInstalar() || localStorage.getItem('ext_noInstalar')) return '';
+  return `<div class="card" style="display:flex;align-items:center;gap:12px;border-color:var(--red)"><img src="icon-192.png" alt="" style="width:44px;height:44px;border-radius:10px;border:1px solid var(--line)">
+    <div style="flex:1;min-width:0"><b style="font-size:14.5px">Instale la app</b><div class="muted" style="font-size:12.5px">Ábrala desde la pantalla de inicio, sin buscar el enlace. Funciona aunque no haya señal.</div></div>
+    <div style="display:flex;flex-direction:column;gap:4px"><button class="btn sm pri" data-act="instalar">Instalar</button><button class="btn sm ghost" data-act="noInstalar" style="height:28px">Ahora no</button></div></div>`;
+}
+async function instalar() {
+  if (promptInstalar) { promptInstalar.prompt(); const r = await promptInstalar.userChoice.catch(() => ({})); if (r.outcome === 'accepted') promptInstalar = null; redraw(); return; }
+  if (esIOS) { await ask('Instalar en iPhone', 'En iPhone se instala desde Safari:', null, `<ol style="margin:0 0 12px;padding-left:20px;font-size:14px;line-height:1.6"><li>Abra este enlace en <b>Safari</b>.</li><li>Toque el botón <b>Compartir</b> (cuadro con flecha hacia arriba).</li><li>Elija <b>Agregar a inicio</b> y toque <b>Agregar</b>.</li></ol>`); return; }
+  await ask('Instalar la app', 'Abra este enlace en Chrome o Edge y use el menú (⋮) → "Instalar app" o "Agregar a la pantalla principal".', null);
+}
+function pintarBotonLogin() { const b = $('lInst'); if (b) b.innerHTML = botonInstalar('btn'); }
+
 /* ======================= 8) Acciones y arranque ======================= */
 const ACT = {
   go: (el) => go(el.dataset.h),
+  instalar: () => instalar(),
+  noInstalar: () => { try { localStorage.setItem('ext_noInstalar', '1'); } catch (e) {} redraw(); },
   salir: async () => { if (await ask('Cerrar sesión', '¿Salir de la app en este dispositivo?', 'Salir')) { salirVisita(); stopAll('list'); await Cloud.logout(); } },
   cliente: (el) => (location.hash === '#/nuevo' && !el.closest('.sugg') ? null : entrarCliente(el.dataset.id)),
   nvF: (el) => { NV.frecuencia = el.dataset.v; renderNuevo(); },
@@ -887,7 +911,8 @@ function pantallaLogin(msg = '') {
   gate(`<img src="${LOGO}" alt="SOS FIRE"><h2>Inspección de extintores</h2><p>Entre con el usuario y la contraseña que le dio SOS FIRE.</p>
     <form id="fLogin"><label class="field">Usuario o correo<input id="lU" autocomplete="username" autocapitalize="off" required></label>
     <label class="field">Contraseña<input id="lP" type="password" autocomplete="current-password" required></label>
-    <button class="btn pri" type="submit" id="lB">Entrar</button><div class="err" id="lE">${esc(msg)}</div></form>`);
+    <button class="btn pri" type="submit" id="lB">Entrar</button><div class="err" id="lE">${esc(msg)}</div></form>
+    <div id="lInst" style="margin-top:6px">${botonInstalar('btn')}</div>`);
   $('fLogin').onsubmit = async (e) => {
     e.preventDefault(); $('lE').textContent = ''; $('lB').disabled = true;
     try { await Cloud.login($('lU').value, $('lP').value); }
@@ -931,4 +956,4 @@ function arrancar() {
   });
 }
 arrancar();
-if ('serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
