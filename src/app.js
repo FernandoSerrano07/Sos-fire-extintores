@@ -485,6 +485,7 @@ function renderReporte() {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn xl" data-act="xlsx" style="height:52px">⬇ Excel</button><button class="btn pri" data-act="pdf" style="height:52px">⬇ PDF</button></div></div>
       <div class="card"><h3>Recarga por vencer (${porVencer.length})</h3>${porVencer.length ? porVencer.map((e) => `<div class="feed" style="cursor:pointer" data-act="ficha" data-id="${e.id}"><span class="tm"><b>#${esc(e.n)}</b></span><span style="flex:1">${esc(e.area)}<br><span class="muted">${esc([e.marca, e.tipo, e.capacidad].join(' · '))}</span></span>${vencPill(e, S.rev[e.id])}</div>`).join('') : '<p class="muted" style="margin:0;font-size:13px">Ninguno vence este mes ni el siguiente.</p>'}</div>
       <div class="card"><h3>Hallazgos (${fallas.length})</h3>${fallas.length ? fallas.map((e) => `<div class="feed" style="cursor:pointer" data-act="ficha" data-id="${e.id}"><span class="tm"><b>#${esc(e.n)}</b></span><span style="flex:1"><b>${esc(e.area)}</b><br><span class="muted">${esc(fallasDe(S.rev[e.id]).join(' · '))}${S.rev[e.id].obs ? ' — ' + esc(S.rev[e.id].obs) : ''}</span></span><b style="color:var(--red)">Corregir ›</b></div>`).join('') : '<p class="muted" style="margin:0;font-size:13px">Sin fallas registradas.</p>'}</div>
+      ${v ? tarjetaResumen(v, c, ext, S.rev, true) : ''}
       ${v ? bloqueFirmas(v, c) : ''}
       ${v && v.estado === 'en_curso' ? `<button class="btn pri" data-act="terminar" style="height:52px">Terminar visita</button>` : v ? `<p class="muted" style="text-align:center;font-size:13px">Visita terminada ${hhmm(v.cerrada)}</p>` : ''}
     </div>
@@ -493,6 +494,68 @@ function renderReporte() {
   if (v) iniciarFirmas(v);
 }
 
+
+
+/* ----- Resumen "Acciones correctivas o de mejora" (texto automático del reporte) ----- */
+const unir = (a) => (a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1]);
+function datosResumen(ext, rev) {
+  const d = { n: calcResumen(ext, rev).done, bad: 0, mant: 0, mangueras: 0, ph: 0, noenc: 0, nuevos: 0, somP: 0, somC: 0, retP: 0, retC: 0, sopOk: 0, sopPend: 0, recargas: 0 };
+  for (const e of ext) {
+    const r = rev[e.id]; const co2 = esCO2(e.tipo);
+    if (e.nuevo) d.nuevos++;
+    if (sopDe(e, r) === 'pend') d.sopPend++;
+    if (['vencida', 'pronto'].includes(venc((r && r.recProx) || e.recProx))) d.recargas++;
+    if (!r || estado(r) === 'pend') continue;
+    const obs = String(r.obs || '').toLowerCase();
+    const ret = r.sit === 'retirado' || /retirad\w* para myre/.test(obs);
+    const som = !ret && /se (sometio|sometió|efectuo|efectuó) (a )?myre/.test(obs);
+    if (r.soporte === 'ok') d.sopOk++;
+    if (r.sit === 'noenc') { d.noenc++; continue; }
+    if (ret) { co2 ? d.retC++ : d.retP++; }
+    if (som) { co2 ? d.somC++ : d.somP++; }
+    const sinCrit = r.sit === 'reserva';
+    if (estado(r) === 'bad') d.bad++;
+    const mang = (r.c && r.c.manguera === 'n') || /manguera/.test(obs); if (mang) d.mangueras++;
+    if (/ph fic|ph\b/.test(obs) || (co2 && phVencido(r.ph || e.ph))) d.ph++;
+    if (!sinCrit && (estado(r) === 'bad' || mang || /man[oó]metro|cincho|despresuriz|requiere recarga|descargado/.test(obs))) d.mant++;
+  }
+  return d;
+}
+// Devuelve el texto con **negrita**; si el administrador lo editó, usa el suyo.
+function textoResumen({ c, v, ext, rev }) {
+  if (v && v.resumenTxt && v.resumenTxt.trim()) return v.resumenTxt.trim();
+  const d = datosResumen(ext, rev); const pl = (n, a, b) => (n === 1 ? a : b);
+  if (!d.n) return 'Todavía no hay extintores revisados en esta visita. Al revisarlos, este resumen se completa solo.';
+  const hallazgos = [d.mant && 'necesidades de mantenimiento', d.mangueras && 'cambios de mangueras', d.ph && 'registros de pruebas hidrostáticas por verificar', d.noenc && 'extintores no localizados'].filter(Boolean);
+  let t = `Durante la inspección de ${d.n} ${pl(d.n, 'extintor', 'extintores')}, `;
+  if (hallazgos.length) t += `se identificaron equipos con ${unir(hallazgos)}, por lo que es importante continuar con las acciones correctivas${d.noenc || d.nuevos ? ' y la actualización del inventario' : ''}.`;
+  else t += `no se identificaron hallazgos que requieran acciones correctivas${d.nuevos ? '; se actualizó el inventario con los extintores nuevos' : ''}, por lo que se recomienda mantener el programa de inspección y mantenimiento.`;
+  const tot = d.somP + d.somC + d.retP + d.retC; const pqs = d.somP + d.retP, co2 = d.somC + d.retC;
+  const av = [];
+  if (tot) {
+    const partes = [];
+    if (pqs) partes.push(`**${pqs} de Polvo Químico Seco**`);
+    if (co2) partes.push(`**${co2} ${d.retC ? 'retirados para PH y Recarga de' : 'de'} Dióxido de carbono**`);
+    av.push(`ya iniciamos las recargas correspondientes, registrando un total de **${tot} ${pl(tot, 'extintor sometido', 'extintores sometidos')} a Recarga y Mantenimiento**, ${unir(partes)}`);
+  }
+  if (d.sopOk) av.push(`la sustitución de soportes, logrando efectuar **${d.sopOk} ${pl(d.sopOk, 'cambio', 'cambios')} de soporte durante las jornadas de trabajo**`);
+  if (av.length) {
+    t += ` Como avance significativo, ${av.length > 1 ? av[0] + ', así como ' + av[1] : av[0]}.`;
+    t += d.sopOk ? ' Estas acciones representan un avance importante para mejorar las condiciones de seguridad de los equipos, especialmente aquellos que anteriormente se encontraban sujetos mediante soportes plásticos inadecuados.' : ' Estas acciones representan un avance importante para mejorar las condiciones de seguridad de los equipos.';
+  }
+  const rec = [d.sopPend && 'los cambios de soporte pendientes', (d.bad - d.noenc > 0 || d.mangueras) && 'la revisión de equipos deteriorados', (d.recargas || d.ph) && 'las recargas necesarias'].filter(Boolean);
+  const donde = /decameron/i.test((c && c.nombre) || '') ? 'en todo el complejo' : 'en todas las instalaciones';
+  t += rec.length ? ` Recomendamos continuar priorizando ${unir(rec)}, con el objetivo de evidenciar mejoras progresivas ${donde} y garantizar su correcto funcionamiento ante una emergencia.` : ` Recomendamos mantener la revisión periódica, con el objetivo de conservar las condiciones de seguridad ${donde} y garantizar su correcto funcionamiento ante una emergencia.`;
+  return t;
+}
+const partesNegrita = (t) => String(t).split('**').map((x, i) => ({ t: x, b: i % 2 === 1 })).filter((p) => p.t);
+const resumenHtml = (t) => partesNegrita(t).map((p) => (p.b ? `<b>${esc(p.t)}</b>` : esc(p.t))).join('');
+function tarjetaResumen(v, c, ext, rev, puedeEditar) {
+  const t = textoResumen({ c, v, ext, rev });
+  return `<div class="card2 resumen"><div class="hd"><div class="sech"><div class="t"><span class="ic v">${ICON.check}</span><h2>Acciones correctivas o de mejora</h2></div></div></div><div class="bd"><p class="restx">${resumenHtml(t)}</p>
+    <p class="muted" style="font-size:12px;margin:8px 0 0">${v && v.resumenTxt ? 'Texto editado a mano.' : 'Se escribe solo según lo que se ha revisado y se actualiza con cada cambio.'} Sale al final del Excel y del PDF.</p>
+    ${puedeEditar ? `<div class="inline" style="margin-top:10px"><button class="btn sm" data-act="resEdit" data-id="${v.id}">✎ Editar texto</button>${v.resumenTxt ? `<button class="btn sm ghost" data-act="resAuto" data-id="${v.id}">Volver al automático</button>` : ''}</div>` : ''}</div></div>`;
+}
 
 /* ----- Firmas del técnico y del encargado (cierre de visita) ----- */
 const F = (v) => (v && v.firmas) || {};
@@ -882,6 +945,7 @@ function renderACliente(cid) {
       <div class="card2">${hd('alert', 'r', 'Hallazgos y vencimientos', hall.length)}<div class="tbl"><table><thead><tr><th>N°</th><th>Área</th><th>Extintor</th><th>Problema</th><th>Técnico</th></tr></thead><tbody>
         ${hall.map((h) => `<tr><td><b>${esc(h.e.n)}</b></td><td>${esc(h.e.area)}</td><td>${esc([h.e.marca, h.e.tipo, h.e.capacidad].filter(Boolean).join(' · '))}</td><td><span class="pill ${h.tipo === 'Falla' || h.tipo === 'Vencida' ? 'bad' : 'warn'}">${h.tipo}</span> ${esc(h.det)}</td><td>${esc((h.by || '—').split(' ')[0])}</td></tr>`).join('') || `<tr><td colspan="5" style="text-align:center;padding:26px;color:var(--mut)"><span style="display:inline-flex;align-items:center;gap:8px"><span class="ic g" style="width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center">${ICON.check.replace('<svg', '<svg width="14" height="14"')}</span>Sin hallazgos ni vencimientos</span></td></tr>`}
       </tbody></table></div></div>
+      ${tarjetaResumen(v, c, ext, rev, true)}
     </div>
     <div class="side">
       <div class="card2 side2">${hd('users', 'b', v.estado === 'en_curso' ? 'Técnicos en campo' : 'Técnicos de la visita', tecs.length)}<div class="bd" style="padding-top:4px;padding-bottom:6px">${tecs.map(([u, t]) => `<div class="tcard">${avatar(t.nombre, u).replace('</span>', online(t.visto) ? '<i class="on"></i></span>' : '</span>')}<div class="i"><b>${esc(t.nombre)}</b><small>${online(t.visto) ? '<span style="color:var(--ok);font-weight:600">● En línea</span>' : t.visto ? 'Visto ' + hace(t.visto) : 'Desconectado'}</small></div><div class="n"><b>${porTec[u] || 0}</b><small>revisados</small></div></div>`).join('') || '<p class="muted" style="margin:10px 0">Nadie ha entrado todavía.</p>'}</div></div>
@@ -974,6 +1038,21 @@ async function exportXlsx({ c, v, ext, rev }) {
     put('AF', obsReporte(e, r));
     rn++;
   }
+  // Resumen "Acciones correctivas o de mejora", como lo escribe el cliente al final de la hoja 2
+  {
+    const AZUL = 'FF1D4E90'; const borde = { style: 'thin', color: { argb: 'FF2F5597' } };
+    ws.mergeCells(`B${rn}:AI${rn}`); const hc = ws.getCell(`B${rn}`); hc.value = 'Acciones correctivas o de mejora';
+    hc.font = { bold: true, size: 9, color: { argb: 'FFFFFFFF' }, name: 'Arial' }; hc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: AZUL } }; hc.alignment = { horizontal: 'center', vertical: 'middle' }; ws.getRow(rn).height = 16;
+    rn++;
+    const txt = textoResumen({ c, v, ext, rev });
+    ws.mergeCells(`B${rn}:AI${rn}`); const bc = ws.getCell(`B${rn}`);
+    bc.value = { richText: partesNegrita(txt).map((p) => ({ text: p.t, font: { name: 'Arial', size: 9.5, bold: p.b } })) };
+    bc.alignment = { wrapText: true, vertical: 'top', horizontal: 'justify' };
+    for (let col = 2; col <= 35; col++) { const cl = ws.getRow(rn).getCell(col); cl.border = { top: col === 2 ? undefined : undefined, bottom: borde, left: col === 2 ? borde : undefined, right: col === 35 ? borde : undefined }; }
+    let anchoCh = 0; for (let col = 2; col <= 35; col++) anchoCh += ws.getColumn(col).width || 8;
+    const lineas = Math.ceil(txt.replace(/\*\*/g, '').length / (anchoCh * 1.05)); ws.getRow(rn).height = Math.max(40, lineas * 13.5 + 12);
+    rn++;
+  }
   // Firmas al pie, como en el formato de detectores
   const f = F(v); const r1 = rn + 1, r2 = rn + 2, r3 = rn + 3;
   const thin = { style: 'thin', color: { argb: 'FF7F7F7F' } };
@@ -1036,8 +1115,30 @@ async function exportPdf({ c, v, ext, rev }) {
       const bad = k === 'recProx' ? ['vencida', 'pronto'].includes(venc(d.cell.raw)) : k === 'altura' ? altNum(d.cell.raw) > ALT_MAX : r.c && r.c[k] && !esBueno(CK[k], r.c[k]);
       if (bad) { d.cell.styles.textColor = RED; d.cell.styles.fontStyle = 'bold'; d.cell.styles.fillColor = [253, 236, 236]; } },
     willDrawPage: (d) => { if (d.pageNumber > 1) head(); } });
+  // Resumen "Acciones correctivas o de mejora" (justificado, con negrita)
+  let yEnd = doc.lastAutoTable.finalY + 6;
+  {
+    const txt = textoResumen({ c, v, ext, rev }).replace(/₂/g, '2'); const fs = 8.2, lh = 4.1, bw0 = W - 2 * M, pad = 3;
+    doc.setFontSize(fs); const sp = (() => { doc.setFont('helvetica', 'normal'); return doc.getTextWidth(' '); })();
+    const pal = []; for (const p of partesNegrita(txt)) for (const w of p.t.split(/\s+/)) if (w) { doc.setFont('helvetica', p.b ? 'bold' : 'normal'); pal.push({ w, b: p.b, wd: doc.getTextWidth(w) }); }
+    const lineas = []; let cur = [], ancho = 0;
+    for (const p of pal) { const n = cur.length ? ancho + sp + p.wd : p.wd; if (n > bw0 - 2 * pad && cur.length) { lineas.push(cur); cur = [p]; ancho = p.wd; } else { cur.push(p); ancho = n; } }
+    if (cur.length) lineas.push(cur);
+    const alto = 6 + lineas.length * lh + 2 * pad;
+    if (yEnd + alto > H - 14) { doc.addPage(); head(); yEnd = 28; }
+    doc.setFillColor(...BLUE); doc.rect(M, yEnd, bw0, 6, 'F'); doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(255); doc.text('Acciones correctivas o de mejora', W / 2, yEnd + 4.1, { align: 'center' });
+    doc.setDrawColor(...BLUE); doc.setLineWidth(0.3); doc.rect(M, yEnd + 6, bw0, alto - 6);
+    doc.setFontSize(fs); doc.setTextColor(40); let yy = yEnd + 6 + pad + 3;
+    lineas.forEach((ln, i) => {
+      const util = bw0 - 2 * pad; const suma = ln.reduce((a, p) => a + p.wd, 0); const ult = i === lineas.length - 1;
+      const gap = !ult && ln.length > 1 ? (util - suma) / (ln.length - 1) : sp; let x = M + pad;
+      for (const p of ln) { doc.setFont('helvetica', p.b ? 'bold' : 'normal'); doc.text(p.w, x, yy); x += p.wd + gap; }
+      yy += lh;
+    });
+    yEnd += alto;
+  }
   // Firmas al final del reporte
-  const f = F(v); let y = doc.lastAutoTable.finalY + 10;
+  const f = F(v); let y = yEnd + 10;
   if (y + 46 > H - 12) { doc.addPage(); head(); y = 32; }
   const bw = (W - 2 * M - 20) / 2;
   [[M, 'Equipo SOS FIRE', 'Equipo SOS FIRE', f.tec, ''], [M + bw + 20, encLabel(c), f.encNombre, f.enc, encLabel(c)]].forEach(([x, titulo, nombre, firma, sub]) => {
@@ -1119,6 +1220,15 @@ const ACT = {
   pdfV: (el) => run(async () => exportPdf(await datosVisita(el.dataset.id))),
   nuevaVisitaA: () => { const c = cliente(S.aCid); const vid = nuevaVisita(c); verVisitaAdm(vid); toast('Visita de hoy iniciada'); },
   terminarA: async () => { if (!(await ask('Terminar visita', 'La visita pasa al historial.', 'Terminar'))) return; Cloud.updateVisita(S.aVid, { estado: 'terminada', cerrada: Date.now(), resumen: calcResumen(S.aExt, S.aRev) }).catch(cloudError); },
+  resEdit: async (el) => {
+    const v = S.visita && S.visita.id === el.dataset.id ? S.visita : (S.aVisitas.find((x) => x.id === el.dataset.id) || S.visita); if (!v) return;
+    const lista = S.visita && S.visita.id === v.id ? S.ext : S.aExt; const revs = S.visita && S.visita.id === v.id ? S.rev : S.aRev;
+    const actual = textoResumen({ c: cliente(v.cid), v, ext: lista, rev: revs });
+    if (!(await ask('Acciones correctivas o de mejora', 'Edite el texto. Lo que va entre ** ** sale en negrita. Para volver al texto automático use el botón "Volver al automático".', 'Guardar', `<textarea id="resT" rows="11" style="width:100%;border:1.5px solid #ddd;border-radius:10px;padding:10px;font:inherit;font-size:14px;line-height:1.4">${esc(actual)}</textarea>`))) return;
+    const nuevo = $('resT') ? $('resT').value.trim() : ''; v.resumenTxt = nuevo === actual ? v.resumenTxt || '' : nuevo;
+    Cloud.updateVisita(v.id, { resumenTxt: v.resumenTxt }).catch(cloudError); route();
+  },
+  resAuto: (el) => { const v = S.visita && S.visita.id === el.dataset.id ? S.visita : (S.aVisitas.find((x) => x.id === el.dataset.id) || S.visita); if (!v) return; v.resumenTxt = ''; Cloud.updateVisita(v.id, { resumenTxt: '' }).catch(cloudError); route(); },
   sigClr: (el) => { const k = el.dataset.id; S.visita.firmas = { ...F(S.visita), [k]: '' }; Cloud.updateVisita(S.vid, { [`firmas.${k}`]: '' }).catch(cloudError); route(); },
   vTab: (el) => { ui.vTab = el.dataset.id; renderAHome(); },
   vCliSel: (el) => { ui.vCli = el.dataset.id; renderAHome(); },
