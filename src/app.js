@@ -73,7 +73,7 @@ function descargar(nombre, blob) {
 /* ======================= 2) Criterios del formato (Hoja 2) ======================= */
 // good = la opción correcta. col = columnas del Excel para cada opción (Bueno|Malo, Sí|No).
 const CRIT = [
-  { k: 'presion', l: 'Presión del manómetro', o: [['ok', 'Correcta'], ['baja', 'Baja'], ['alta', 'Alta']], good: 'ok', wide: true },
+  { k: 'presion', l: 'Presión del manómetro', o: [['ok', 'Correcta'], ['baja', 'Baja'], ['alta', 'Alta'], ['na', 'No aplica']], good: 'ok', also: ['na'], wide: true },
   { k: 'cilindro', l: 'Estado físico cilindro', o: [['b', 'Bueno'], ['m', 'Malo']], good: 'b', col: ['N', 'O'] },
   { k: 'instrucciones', l: 'Instrucciones de uso', o: [['s', 'Sí'], ['n', 'No']], good: 's', col: ['P', 'Q'] },
   { k: 'senal', l: 'Señalización', o: [['b', 'Bueno'], ['m', 'Malo']], good: 'b', col: ['R', 'S'] },
@@ -81,22 +81,40 @@ const CRIT = [
   { k: 'manguera', l: 'Manguera', o: [['s', 'Sí'], ['n', 'No']], good: 's', col: ['V', 'W'] },
   { k: 'boquilla', l: 'Boquilla', o: [['s', 'Sí'], ['n', 'No']], good: 's', col: ['X', 'Y'] },
   { k: 'etiqueta', l: 'Etiqueta', o: [['s', 'Sí'], ['n', 'No']], good: 's', col: ['Z', 'AA'] },
-  { k: 'altura', l: 'Altura', o: [['ok', 'Correcta'], ['mal', 'Incorrecta']], good: 'ok' },
 ];
 const CK = Object.fromEntries(CRIT.map((c) => [c.k, c]));
 const optLabel = (k, v) => (CK[k].o.find((o) => o[0] === v) || [, ''])[1];
-const QUICK = ['Requiere recarga', 'Sin marchamo', 'Se colocó marchamo', 'Obstruido', 'Sin señalización', 'Golpeado / oxidado', 'Manguera dañada', 'No se encontró'];
+// Frases que el cliente ya usa en su hoja 2 (columna Observaciones)
+const QUICK = ['PH ficticia', 'Cambiar manguera', 'Se cambió manómetro', 'Manguera cristalizada', 'Tarjeta de control no visible', 'Despresurizado', 'Descargado en bodega', 'Se cambió cincho plástico', 'Retirado para MYRE', 'Se sometió a MYRE', 'Pendiente de MYRE', 'Se efectuó MYRE', 'Requiere recarga'];
+// Situación del extintor: cuando no se puede inspeccionar normalmente
+const SIT = [['', 'Normal'], ['noenc', 'No se encontró'], ['reserva', 'Reserva'], ['retirado', 'Retirado']];
+const SIT_TXT = { noenc: 'No encontrado', reserva: 'Reserva', retirado: 'Retirado' };
+// Soporte (la gran mayoría de la hoja 2 lo anota en Observaciones)
+const SOP = [['', 'Bien'], ['pend', 'Por cambiar'], ['ok', 'Ya se cambió']];
+const SOP_TXT = { pend: 'Se debe efectuar cambio de soporte', ok: 'Se efectuó cambio de soporte' };
+const ALT_MAX = 1.53; // m (5 pies) al tope del extintor de hasta 18 kg
+const esBueno = (c, v) => v === c.good || (c.also || []).includes(v);
+const esCO2 = (t) => /^c[o0]\s*(₂|2)/i.test(String(t || '').trim());
+const altNum = (a) => { const m = String(a || '').replace(',', '.').match(/\d+(\.\d+)?/); return m ? parseFloat(m[0]) : null; };
+const altTxt = (a) => { const n = altNum(a); return n == null ? '' : n.toFixed(2); };
+const sopDe = (e, r) => (r && r.soporte !== undefined ? r.soporte : (e && e.soporte) || '');
+const phVencido = (ph) => { const m = String(ph || '').match(/^(\d{1,2})\/(\d{4})$/); if (!m) return false; const d = new Date(); return (d.getFullYear() * 12 + d.getMonth()) - (+m[2] * 12 + (+m[1] - 1)) >= 60; };
+// Observaciones como las escribe el cliente: "PH ficticia / Se debe efectuar cambio de soporte"
+const obsReporte = (e, r) => [r && r.sit ? SIT_TXT[r.sit] : '', r && r.obs ? r.obs.split(';').map((x) => x.trim()).filter(Boolean).join(' / ') : '', r && r.t ? SOP_TXT[sopDe(e, r)] || '' : sopDe(e, r) === 'pend' ? SOP_TXT.pend : ''].filter(Boolean).join(' / ');
 const TIPOS = ['ABC', 'CO₂', 'K', 'Agua', 'BC', 'Otro'];
 
 function estado(rev) {
-  if (!rev || !rev.c) return 'pend';
+  if (!rev) return 'pend';
+  if (rev.sit === 'noenc') return 'bad';
+  if (rev.sit) return 'esp';
+  if (!rev.c) return 'pend';
   const vals = CRIT.map((c) => rev.c[c.k]);
   if (vals.every((v) => !v)) return 'pend';
-  if (CRIT.some((c) => rev.c[c.k] && rev.c[c.k] !== c.good)) return 'bad';
+  if (CRIT.some((c) => rev.c[c.k] && !esBueno(c, rev.c[c.k]))) return 'bad';
   if (vals.some((v) => !v)) return 'part';
   return 'ok';
 }
-const fallasDe = (rev) => CRIT.filter((c) => rev && rev.c && rev.c[c.k] && rev.c[c.k] !== c.good).map((c) => `${c.l.replace(' del manómetro', '').replace(' de uso', '')}: ${optLabel(c.k, rev.c[c.k])}`);
+const fallasDe = (rev) => (rev && rev.sit === 'noenc' ? ['No se encontró'] : []).concat(CRIT.filter((c) => rev && rev.c && rev.c[c.k] && !esBueno(c, rev.c[c.k])).map((c) => `${c.l.replace(' del manómetro', '').replace(' de uso', '')}: ${optLabel(c.k, rev.c[c.k])}`));
 // Recarga "MM/AAAA": vencida, por vencer (este mes o el siguiente) o al día
 function venc(mmaaaa) {
   const m = String(mmaaaa || '').match(/^(\d{1,2})\/(\d{4})$/); if (!m) return null;
@@ -166,13 +184,14 @@ const tocaHoy = (c) => (c.frecuencia === 'semanal' && Number(c.dia) === new Date
 
 // Resumen que se guarda en la visita (para la pantalla del administrador)
 function calcResumen(ext, rev) {
-  let ok = 0, bad = 0, part = 0, pronto = 0;
+  let ok = 0, bad = 0, part = 0, pronto = 0, esp = 0, sop = 0;
   for (const e of ext) {
     const r = rev[e.id]; const s = estado(r);
-    if (s === 'ok') ok++; else if (s === 'bad') bad++; else if (s === 'part') part++;
+    if (s === 'ok') ok++; else if (s === 'bad') bad++; else if (s === 'part') part++; else if (s === 'esp') esp++;
+    if (sopDe(e, r) === 'pend') sop++;
     const v = venc((r && r.recProx) || e.recProx); if (v === 'vencida' || v === 'pronto') pronto++;
   }
-  return { total: ext.length, ok, bad, part, done: ok + bad + part, pronto };
+  return { total: ext.length, ok: ok + esp, bad, part, done: ok + bad + part + esp, pronto, sop };
 }
 let resT = null;
 function guardarResumen(texto) {
@@ -395,29 +414,31 @@ function renderLista() {
   if (ui.zona && !zonas.includes(ui.zona)) ui.zona = '';
   let list = ui.zona ? ext.filter((e) => (e.zona || '') === ui.zona) : ext;
   list = buscar(list, ui.q);
-  const cnt = { all: list.length, pend: 0, bad: 0, venc: 0, ok: 0 };
-  for (const e of list) { const s = estado(S.rev[e.id]); if (s === 'pend' || s === 'part') cnt.pend++; if (s === 'bad') cnt.bad++; if (s === 'ok') cnt.ok++; const vv = venc((S.rev[e.id] && S.rev[e.id].recProx) || e.recProx); if (vv === 'vencida' || vv === 'pronto') cnt.venc++; }
+  const cnt = { all: list.length, pend: 0, bad: 0, venc: 0, ok: 0, sop: 0 };
+  for (const e of list) { const s = estado(S.rev[e.id]); if (s === 'pend' || s === 'part') cnt.pend++; if (s === 'bad') cnt.bad++; if (s === 'ok' || s === 'esp') cnt.ok++; if (sopDe(e, S.rev[e.id]) === 'pend') cnt.sop++; const vv = venc((S.rev[e.id] && S.rev[e.id].recProx) || e.recProx); if (vv === 'vencida' || vv === 'pronto') cnt.venc++; }
   if (ui.filtro === 'pend') list = list.filter((e) => ['pend', 'part'].includes(estado(S.rev[e.id])));
   if (ui.filtro === 'bad') list = list.filter((e) => estado(S.rev[e.id]) === 'bad');
-  if (ui.filtro === 'ok') list = list.filter((e) => estado(S.rev[e.id]) === 'ok');
+  if (ui.filtro === 'ok') list = list.filter((e) => ['ok', 'esp'].includes(estado(S.rev[e.id])));
+  if (ui.filtro === 'sop') list = list.filter((e) => sopDe(e, S.rev[e.id]) === 'pend');
   if (ui.filtro === 'venc') list = list.filter((e) => ['vencida', 'pronto'].includes(venc((S.rev[e.id] && S.rev[e.id].recProx) || e.recProx)));
   const shown = list.slice(0, ui.limit);
   let lastZ = null; const agrupar = !ui.zona && !ui.q;
   const rows = shown.map((e) => {
     const r = S.rev[e.id]; const s = estado(r);
     const head = agrupar && e.zona !== lastZ ? `<div class="zhead">${esc(e.zona || 'Sin zona')}</div>` : ''; lastZ = e.zona;
-    const st = s === 'pend' ? '<span class="pill pend">Pendiente</span>' : s === 'ok' ? '<span class="pill ok">✓ Todo bien</span>' : s === 'bad' ? '<span class="pill bad">✕ Falla</span>' : '<span class="pill pend">Incompleto</span>';
+    const st = s === 'pend' ? '<span class="pill pend">Pendiente</span>' : s === 'ok' ? '<span class="pill ok">✓ Todo bien</span>' : s === 'bad' ? '<span class="pill bad">✕ Falla</span>' : s === 'esp' ? `<span class="pill pend">${SIT_TXT[r.sit]}</span>` : '<span class="pill pend">Incompleto</span>';
+    const sopP = sopDe(e, r) === 'pend' ? '<span class="pill warn">Soporte</span>' : '';
     const det = s === 'bad' ? esc(fallasDe(r).join(' · ')) : '';
     return `${head}<div class="row ${s === 'ok' ? 'ok' : s === 'bad' ? 'bad' : ''}" id="r_${e.id}">
       <span class="num">${esc(e.n ?? '')}</span>
       <button class="main" data-act="ficha" data-id="${e.id}"><span class="t">${marcar(e.area || '(sin área)', ui.q)}</span>
         <span class="s">${esc([e.marca, e.tipo, e.capacidad].filter(Boolean).join(' · '))}${e.numero ? ' · N° ' + esc(e.numero) : ''}</span>
-        <span class="st">${e.nuevo ? '<span class="pill new">Nuevo</span>' : ''}${st}${det ? `<span>${det}</span>` : ''}${r && r.t ? `<span>${esc((r.by || '').split(' ')[0])} ${hhmm(r.t)}</span>` : ''}${vencPill(e, r)}</span></button>
+        <span class="st">${e.nuevo ? '<span class="pill new">Nuevo</span>' : ''}${st}${sopP}${det ? `<span>${det}</span>` : ''}${r && r.t ? `<span>${esc((r.by || '').split(' ')[0])} ${hhmm(r.t)}</span>` : ''}${vencPill(e, r)}</span></button>
       ${s === 'pend' ? `<button class="quick" data-act="okRapido" data-id="${e.id}" aria-label="Marcar todo bien">✓ OK</button>` : `<button class="quick ed" data-act="ficha" data-id="${e.id}">Editar</button>`}
     </div>`;
   }).join('');
   const quienes = v ? Object.entries(v.tecnicos || {}).filter(([u, t]) => online(t.visto) && u !== Cloud.uid()).map(([, t]) => t.nombre.split(' ')[0]) : [];
-  const fil = [['all', `Todos ${cnt.all}`, ''], ['pend', `Pendientes ${cnt.pend}`, ''], ['bad', `Con falla ${cnt.bad}`, 'bad'], ['venc', `Por vencer ${cnt.venc}`, 'warn'], ['ok', `OK ${cnt.ok}`, '']];
+  const fil = [['all', `Todos ${cnt.all}`, ''], ['pend', `Pendientes ${cnt.pend}`, ''], ['bad', `Con falla ${cnt.bad}`, 'bad'], ['venc', `Por vencer ${cnt.venc}`, 'warn'], ['sop', `Soporte ${cnt.sop}`, 'warn'], ['ok', `OK ${cnt.ok}`, '']];
   root.innerHTML = `<div class="mob">
     ${topTec({ back: esAdmin() && v ? '#/a/c/' + v.cid : '#/', titulo: c ? c.nombre : (v ? v.cliente : 'Cargando…'), sub: `${netPill()}${quienes.length ? `<span class="muted" style="font-size:11.5px">También: ${esc(quienes.join(', '))}</span>` : ''}`,
       extra: `<div class="prog"><span>Visita ${v ? fmtFecha(v.fecha) : ''}${v && v.estado === 'terminada' ? ' · terminada' : ''}</span><b>${res.done} / ${res.total}</b></div>
@@ -434,8 +455,9 @@ function renderLista() {
       ${list.length > ui.limit ? `<button class="btn" data-act="mas" style="align-self:center">Ver ${Math.min(80, list.length - ui.limit)} más</button>` : ''}
       ${S.revOk ? `<button class="addbig" data-act="nuevoExt">+ ${ui.q ? `Agregar “${esc(ui.q)}” como extintor nuevo` : 'Agregar extintor que no está en la lista'}</button>` : ''}
     </div>
+    ${S.revOk && v && v.estado === 'en_curso' ? '<button class="fab" data-act="nuevoExt" aria-label="Agregar extintor">+ Agregar</button>' : ''}
     ${navTec('lista')}
-  </div>`;
+  </div>`
   const qi = $('q'); qi.oninput = () => { ui.q = qi.value; ui.limit = 80; const pos = qi.selectionStart; renderLista(); const n = $('q'); n.focus(); n.setSelectionRange(pos, pos); };
   qi.onkeydown = (e) => { if (e.key === 'Enter' && list[0]) { e.preventDefault(); abrirFicha(list[0].id); } };
 }
@@ -519,9 +541,16 @@ let ed = null; // { eid, c:{}, obs, recAnt, recProx, ph, prevMalo }
 const extDe = (eid) => S.ext.find((e) => e.id === eid);
 function abrirFicha(eid) {
   const e = extDe(eid); if (!e) return; const r = S.rev[eid];
-  ed = { eid, c: r ? { ...r.c } : {}, obs: r ? r.obs || '' : '', recAnt: (r && r.recAnt) || e.recAnt || '', recProx: (r && r.recProx) || e.recProx || '', ph: (r && r.ph) || e.ph || '', prevMalo: estado(r) === 'bad', aviso: '' };
+  ed = { eid, c: r && r.c ? { ...r.c } : {}, obs: r ? r.obs || '' : '', recAnt: (r && r.recAnt) || e.recAnt || '', recProx: (r && r.recProx) || e.recProx || '', ph: (r && r.ph) || e.ph || '', altura: (r && r.altura) || e.altura || '', sit: (r && r.sit) || '', soporte: sopDe(e, r), prevMalo: estado(r) === 'bad', aviso: '' };
+  if (!ed.c.presion && esCO2(e.tipo) && !ed.sit) { ed.c.presion = 'na'; ed.presionAuto = true; }
   $('shN').textContent = '#' + (e.n ?? ''); $('shArea').textContent = e.area || '(sin área)'; $('shZona').textContent = e.zona || '';
   pintarFicha(); $('scrim').classList.add('on'); $('sheet').classList.add('on'); $('shBody').scrollTop = 0;
+}
+// ¿La ficha sigue como estaba al abrirla? (para no guardar revisiones vacías)
+function fichaVacia() {
+  const e = extDe(ed.eid) || {}; const r = S.rev[ed.eid];
+  const sinCrit = CRIT.every((c) => !ed.c[c.k] || (c.k === 'presion' && ed.presionAuto && ed.c.presion === 'na'));
+  return !ed.sit && sinCrit && !ed.obs.trim() && (ed.altura || '') === ((r && r.altura) || e.altura || '') && ed.soporte === sopDe(e, r) && !r;
 }
 function cerrarFicha() { ed = null; $('scrim').classList.remove('on'); $('sheet').classList.remove('on'); }
 function pintarFicha() {
@@ -537,14 +566,20 @@ function pintarFicha() {
     </div>
     ${ed.aviso ? `<div class="editbar warn">${ed.aviso}</div>` : r ? `<div class="editbar"><b>${otro ? 'Ya lo revisó ' + esc(r.by) : 'Ya revisado'}</b> (${hhmm(r.t)}): ${esc(antes)}${r.obs ? ' — “' + esc(r.obs) + '”' : ''}.${otro ? ' Solo cámbielo si encontró algo distinto.' : ''}</div>` : ''}
     <button class="allok" data-act="todoBien">${ed.prevMalo ? '✓ Cambiar a todo bien' : '✓ Todo bien · Guardar'}</button>
+    <div class="lbl">Situación del extintor</div>
+    <div class="seg sit">${SIT.map(([v, l]) => `<button data-act="sit" data-v="${v}" class="${ed.sit === v ? (v === '' ? 'g' : v === 'noenc' ? 'b' : 'w') : ''}">${l}</button>`).join('')}</div>
+    ${ed.sit ? `<div class="editbar" style="margin-top:10px">${ed.sit === 'noenc' ? 'No se encontró en su lugar: queda como hallazgo. Anote dónde estaba o dónde puede estar.' : ed.sit === 'reserva' ? 'Está de reserva: no se revisa el estado, solo queda anotado.' : 'Fue retirado del sitio (por ejemplo a MYRE o a bodega). Anote el motivo abajo.'}</div>` : `
     <div class="lbl">Verificar estado</div>
-    <div>${CRIT.map((c) => `<div class="crit ${c.wide ? 'wide' : ''}"><span class="l">${c.l}</span><div class="seg">${c.o.map(([v, l]) => `<button data-act="crit" data-k="${c.k}" data-v="${v}" class="${ed.c[c.k] === v ? (v === c.good ? 'g' : 'b') : ''}">${l}</button>`).join('')}</div></div>`).join('')}</div>
+    <div>${CRIT.map((c) => `<div class="crit ${c.wide ? 'wide' : ''}"><span class="l">${c.l}${c.k === 'presion' && esCO2(e.tipo) ? ' <small class="muted">· el CO₂ no tiene manómetro</small>' : ''}</span><div class="seg">${c.o.map(([v, l]) => `<button data-act="crit" data-k="${c.k}" data-v="${v}" class="${ed.c[c.k] === v ? (esBueno(c, v) ? 'g' : 'b') : ''}">${l}</button>`).join('')}</div></div>`).join('')}</div>
+    <div class="crit wide"><span class="l">Altura al tope (metros) <small id="altHint" style="color:var(--warn);font-weight:700">${altNum(ed.altura) > ALT_MAX ? '· pasa de 1.53 m' : ''}</small></span>
+      <input id="fAlt" class="altin" inputmode="decimal" placeholder="1.50" value="${esc(ed.altura)}"></div>
+    <div class="crit wide"><span class="l">Soporte</span><div class="seg">${SOP.map(([v, l]) => `<button data-act="sop" data-v="${v}" class="${ed.soporte === v ? (v === 'pend' ? 'b' : 'g') : ''}">${l}</button>`).join('')}</div></div>`}
     <div class="dates">
       <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lbl">Fechas</span><span class="muted" style="font-size:11.5px">${r ? '' : 'Vienen de la inspección pasada'}</span></div>
       <div class="g3">
         <label class="field">Recarga anterior<input id="fRA" inputmode="numeric" placeholder="MM/AAAA" value="${esc(ed.recAnt)}"></label>
         <label class="field">Próxima recarga<input id="fRP" inputmode="numeric" placeholder="MM/AAAA" value="${esc(ed.recProx)}"></label>
-        <label class="field">PH (año)<input id="fPH" inputmode="numeric" placeholder="AAAA" value="${esc(ed.ph)}"></label>
+        ${esCO2(e.tipo) ? `<label class="field">PH (prueba hidrostática)<input id="fPH" inputmode="numeric" placeholder="MM/AAAA" value="${esc(ed.ph)}">${phVencido(ed.ph) ? '<small style="color:var(--warn);font-weight:700">Tiene más de 5 años</small>' : ''}</label>` : '<div class="field"><span>PH (prueba hidrostática)</span><div class="phna">n/a · solo en los CO₂</div></div>'}
       </div>
       <button class="btn sm" data-act="recargaHoy" style="border:1.5px dashed var(--red);color:var(--red)">Se recargó hoy · actualizar fechas</button>
     </div>
@@ -552,25 +587,31 @@ function pintarFicha() {
     <div class="qc">${QUICK.map((q) => `<button data-act="qobs" data-q="${esc(q)}" class="${ed.obs.split(';').map((x) => x.trim()).includes(q) ? 'on' : ''}">${esc(q)}</button>`).join('')}</div>
     <label><span class="sr">Observaciones</span><textarea class="obs" id="fObs" placeholder="Hallazgos, cambios, recargas…">${esc(ed.obs)}</textarea></label>
     <div class="hint" id="fHint"></div>`;
-  const mmaa = (inp, k) => { inp.oninput = () => { let v = inp.value.replace(/[^\d]/g, '').slice(0, 6); if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2); inp.value = v; ed[k] = v; }; };
+  const mmaa = (inp, k) => { if (!inp) return; inp.oninput = () => { let v = inp.value.replace(/[^\d]/g, '').slice(0, 6); if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2); inp.value = v; ed[k] = v; }; };
   mmaa($('fRA'), 'recAnt'); mmaa($('fRP'), 'recProx');
-  $('fPH').oninput = (ev) => { ev.target.value = ev.target.value.replace(/[^\d]/g, '').slice(0, 4); ed.ph = ev.target.value; };
+  mmaa($('fPH'), 'ph');
+  // Sin volver a dibujar la ficha: si no, el primer toque en "Todo bien" se pierde al salir del campo
+  const fa = $('fAlt'); const hint = () => { const h = $('altHint'); if (h) h.textContent = altNum(ed.altura) > ALT_MAX ? '· pasa de 1.53 m' : ''; };
+  if (fa) { fa.oninput = () => { fa.value = fa.value.replace(',', '.').replace(/[^\d.]/g, '').slice(0, 5); ed.altura = fa.value; hint(); };
+    fa.onblur = () => { if (altNum(ed.altura) != null) { ed.altura = altTxt(ed.altura); fa.value = ed.altura; hint(); } }; }
   $('fObs').oninput = (ev) => { ed.obs = ev.target.value; };
 }
 function avisoOtro(r) { if (!ed) return; ed.aviso = `<b>${esc(r.by || 'Otro técnico')} acaba de guardar este extintor</b> (${estado(r) === 'bad' ? 'con falla' : 'todo bien'}). Si guarda, se reemplaza con lo suyo. <button class="linkb" data-act="ficha" data-id="${ed.eid}">Ver lo que guardó</button>`; pintarFicha(); }
 
 function guardarFicha({ cerrar = true } = {}) {
   if (!ed) return false;
-  const vacio = CRIT.every((c) => !ed.c[c.k]) && !ed.obs.trim();
+  const vacio = fichaVacia();
   const e = extDe(ed.eid);
   if (vacio) { if (cerrar) cerrarFicha(); return false; }
-  for (const k of ['recAnt', 'recProx']) if (ed[k] && !/^\d{2}\/\d{4}$/.test(ed[k])) { $('fHint').textContent = 'Las fechas van como MM/AAAA, por ejemplo 03/2027.'; return false; }
+  for (const k of ['recAnt', 'recProx', 'ph']) if (ed[k] && !/^\d{2}\/\d{4}$/.test(ed[k]) && !(k === 'ph' && /^\d{4}$/.test(ed[k]))) { $('fHint').textContent = 'Las fechas van como MM/AAAA, por ejemplo 03/2027.'; return false; }
   const prev = S.rev[ed.eid] ? JSON.parse(JSON.stringify(S.rev[ed.eid])) : null; const eid = ed.eid;
-  const rec = { eid, c: ed.c, obs: ed.obs.trim(), recAnt: ed.recAnt, recProx: ed.recProx, ph: ed.ph, t: Date.now(), by: yo(), uid: Cloud.uid() };
+  if (esCO2(e && e.tipo) === false) ed.ph = '';
+  const rec = { eid, c: ed.sit ? {} : ed.c, obs: ed.obs.trim(), recAnt: ed.recAnt, recProx: ed.recProx, ph: ed.ph, altura: altTxt(ed.altura), sit: ed.sit || '', soporte: ed.soporte || '', t: Date.now(), by: yo(), uid: Cloud.uid() };
   S.rev[eid] = rec; Cloud.saveRevision(S.vid, eid, rec).catch(cloudError);
-  if (e && (e.recAnt !== rec.recAnt || e.recProx !== rec.recProx || e.ph !== rec.ph)) Cloud.saveExtintor(S.cid, eid, { recAnt: rec.recAnt, recProx: rec.recProx, ph: rec.ph }).catch(cloudError);
+  const sopPend = rec.soporte === 'pend' ? 'pend' : '';
+  if (e && (e.recAnt !== rec.recAnt || e.recProx !== rec.recProx || (e.ph || '') !== rec.ph || (e.altura || '') !== rec.altura || (e.soporte || '') !== sopPend)) { const dd = { recAnt: rec.recAnt, recProx: rec.recProx, ph: rec.ph, altura: rec.altura, soporte: sopPend }; Object.assign(e, dd); Cloud.saveExtintor(S.cid, eid, dd).catch(cloudError); }
   const s = estado(rec);
-  guardarResumen(`${yo().split(' ')[0]} ${s === 'bad' ? 'marcó con falla' : 'revisó'} #${e ? e.n : ''} ${e ? e.area : ''}${s === 'bad' ? ' · ' + fallasDe(rec).join(', ') : ' · todo bien'}`);
+  guardarResumen(`${yo().split(' ')[0]} ${s === 'bad' ? 'marcó con falla' : 'revisó'} #${e ? e.n : ''} ${e ? e.area : ''}${s === 'bad' ? ' · ' + fallasDe(rec).join(', ') : s === 'esp' ? ' · ' + SIT_TXT[rec.sit].toLowerCase() : ' · todo bien'}`);
   toast(`#${e ? e.n : ''} guardado`, () => { if (prev) { S.rev[eid] = prev; Cloud.saveRevision(S.vid, eid, prev); } else { delete S.rev[eid]; Cloud.saveRevision(S.vid, eid, null); } guardarResumen(); redraw(); });
   if (cerrar) cerrarFicha();
   afterSave(); return true;
@@ -579,7 +620,8 @@ function afterSave() { if (ui.q) { ui.q = ''; route(); const q = $('q'); if (q) 
 function okRapido(eid) {
   const e = extDe(eid); if (!e) return;
   const c = Object.fromEntries(CRIT.map((x) => [x.k, x.good]));
-  ed = { eid, c, obs: '', recAnt: e.recAnt || '', recProx: e.recProx || '', ph: e.ph || '' };
+  if (esCO2(e.tipo)) c.presion = 'na';
+  ed = { eid, c, obs: '', recAnt: e.recAnt || '', recProx: e.recProx || '', ph: e.ph || '', altura: e.altura || '', sit: '', soporte: sopDe(e, null) };
   guardarFicha({ cerrar: true });
 }
 $('scrim').onclick = cerrarFicha; $('shX').onclick = cerrarFicha;
@@ -590,7 +632,7 @@ $('shBorrar').onclick = async () => {
   const eid = ed.eid; delete S.rev[eid]; Cloud.saveRevision(S.vid, eid, null).catch(cloudError); guardarResumen(); cerrarFicha(); route();
 };
 $('shSig').onclick = () => {
-  if (!ed) return; const eid = ed.eid; const vacio = CRIT.every((c) => !ed.c[c.k]) && !ed.obs.trim();
+  if (!ed) return; const eid = ed.eid; const vacio = fichaVacia();
   if (!vacio && !guardarFicha({ cerrar: false })) return;
   const list = ui.zona ? S.ext.filter((e) => (e.zona || '') === ui.zona) : S.ext; const i = list.findIndex((e) => e.id === eid);
   const sig = list.slice(i + 1).find((e) => estado(S.rev[e.id]) === 'pend');
@@ -606,7 +648,8 @@ async function formExtintor(eid, sugerencia = '') {
   const zonaDef = e ? e.zona : (ui.zona || zonas[0] || '');
   const html = `
     <label class="field">Zona<input id="xZ" list="xZl" value="${esc(zonaDef)}" placeholder="ZONA #1"><datalist id="xZl">${zonas.map((z) => `<option value="${esc(z)}">`).join('')}</datalist></label>
-    <label class="field">Área donde está ubicado<input id="xA" value="${esc(e ? e.area : sugerencia)}" placeholder="Bodega de mantenimiento"></label>
+    <label class="field">Área donde está ubicado<input id="xA" value="${esc(e ? e.area : sugerencia)}" placeholder="Bodega de mantenimiento" autocomplete="off"></label>
+    ${e ? '' : '<div id="xSug"></div>'}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <label class="field">Marca<input id="xM" list="xMl" value="${esc(e ? e.marca : '')}"><datalist id="xMl">${marcas.map((m) => `<option value="${esc(m)}">`).join('')}</datalist></label>
       <label class="field">Tipo<select id="xT">${TIPOS.map((t) => `<option ${e && e.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label>
@@ -617,14 +660,28 @@ async function formExtintor(eid, sugerencia = '') {
     </div>
     ${e ? '<button class="btn sm ghost" id="xBaja" style="color:var(--red);width:auto">Quitar de la lista (ya no existe)</button>' : ''}`;
   const p = ask(e ? `Datos del extintor #${e.n}` : 'Agregar extintor', e ? 'Corrija lo que haya cambiado (por ejemplo, si lo sustituyeron o lo movieron de área).' : 'Queda guardado en este proyecto para las próximas visitas.', e ? 'Guardar' : 'Agregar y revisar', html);
+  let abrirOtro = null;
+  if (!e) {
+    // Mientras escribe, muestra extintores parecidos para no duplicar (como en la app de detectores)
+    const sug = () => {
+      const a = norm($('xA').value), n = norm($('xN').value), sr = norm($('xS').value);
+      const cand = S.ext.filter((x) => (a.length >= 3 && norm(x.area).includes(a)) || (n.length >= 2 && norm(x.numero) === n) || (sr.length >= 4 && sr !== 'ss' && norm(x.serie) === sr)).slice(0, 3);
+      $('xSug').innerHTML = cand.length ? `<div class="sugg"><div class="h">¿Ya existe? Tóquelo para abrirlo en vez de agregarlo:</div>${cand.map((x) => `<button type="button" data-sg="${x.id}"><b>#${esc(x.n)}</b>${esc(x.area)}<small>${esc([x.marca, x.tipo, x.numero ? 'N° ' + x.numero : ''].filter(Boolean).join(' · '))}</small></button>`).join('')}</div>` : '';
+    };
+    for (const id of ['xA', 'xN', 'xS']) $(id).addEventListener('input', sug);
+    $('xSug').onclick = (ev) => { const b = ev.target.closest('[data-sg]'); if (!b) return; abrirOtro = b.dataset.sg; $('dlgNo').click(); };
+    sug();
+  }
   let baja = false; const bb = $('xBaja'); if (bb) bb.onclick = async () => { baja = true; $('dlgSi').click(); };
-  if (!(await p)) return;
+  if (!(await p)) { if (abrirOtro) { ui.q = ''; ui.filtro = 'all'; route(); abrirFicha(abrirOtro); } return; }
   if (baja) {
     if (!(await ask('Quitar extintor', `¿Quitar el #${e.n} ${e.area} de la lista? Ya no aparecerá en las próximas visitas.`, 'Quitar'))) return;
     Cloud.saveExtintor(S.cid, eid, { baja: true, bajaT: Date.now() }).catch(cloudError); cerrarFicha(); toast(`#${e.n} quitado`); return;
   }
   const d = { zona: $('xZ').value.trim(), area: $('xA').value.trim().replace(/\s+/g, ' '), marca: $('xM').value.trim(), tipo: $('xT').value, capacidad: $('xC').value.trim(), serie: $('xS').value.trim(), numero: $('xN').value.trim(), n: +$('xO').value || nextN };
   if (!d.area) { toast('Escriba el área del extintor'); return formExtintor(eid, sugerencia); }
+  const dup = S.ext.find((x) => x.id !== eid && d.numero && norm(x.numero) === norm(d.numero) && norm(x.zona) === norm(d.zona));
+  if (dup && !(await ask('Ese número ya existe', `El extintor N° ${d.numero} ya está en ${d.zona || 'esta zona'} (#${dup.n} ${dup.area}). ¿Agregar de todos modos?`, 'Agregar igual'))) return formExtintor(eid, sugerencia);
   if (e) { Cloud.saveExtintor(S.cid, eid, d).catch(cloudError); Object.assign(e, d); if (ed && ed.eid === eid) { $('shArea').textContent = d.area; $('shZona').textContent = d.zona; pintarFicha(); } toast('Datos actualizados'); route(); return; }
   const id = Cloud.nuevoIdExtintor(S.cid);
   const nuevo = { ...d, recAnt: '', recProx: '', ph: '', nuevo: true, creado: Date.now(), creadoPor: yo() };
@@ -818,7 +875,8 @@ function renderACliente(cid) {
       ${kpiCard('check', 'b', 'Revisados', `${r.done} <span style="font-size:16px;color:var(--mut);font-weight:500">/ ${r.total}</span>`)}
       ${kpiCard('clock', 'n', 'Pendientes', r.total - r.done)}
       ${kpiCard('alert', 'r', 'Con falla', r.bad, '', '', r.bad ? '#C90012' : '')}
-      ${kpiCard('wrench', 'a', 'Recarga por vencer', r.pronto, '', '', r.pronto ? '#B25E00' : '')}</div>
+      ${kpiCard('wrench', 'a', 'Recarga por vencer', r.pronto, '', '', r.pronto ? '#B25E00' : '')}
+      ${kpiCard('grid', 'v', 'Soportes por cambiar', r.sop || 0, r.sop ? 'pendientes en este proyecto' : 'ninguno pendiente')}</div>
     <div class="cols"><div class="main">
       <div class="card2">${hd('grid', 'g', 'Avance por zona', zonas.length)}<div class="bd"><div class="zg">${zonas.map((z) => `<div class="zt ${z.bad ? 'hasbad' : z.d === z.t ? 'full' : ''}"><div class="zh"><b title="${esc(z.z)}">${esc(zonaCorta(z.z))}</b><span>${Math.round((z.d / Math.max(1, z.t)) * 100)}%</span></div><div class="bar" style="height:7px"><i style="width:${(z.ok / z.t) * 100}%;background:var(--ok)"></i><i style="width:${(z.bad / z.t) * 100}%;background:var(--red)"></i></div><div class="zf"><span>${z.d} de ${z.t} revisados</span>${z.bad ? `<span class="r">${z.bad} con falla</span>` : z.d === z.t ? '<span style="color:var(--ok);font-weight:600">Completa</span>' : ''}</div></div>`).join('') || '<span class="muted">Sin extintores todavía.</span>'}</div></div></div>
       <div class="card2">${hd('alert', 'r', 'Hallazgos y vencimientos', hall.length)}<div class="tbl"><table><thead><tr><th>N°</th><th>Área</th><th>Extintor</th><th>Problema</th><th>Técnico</th></tr></thead><tbody>
@@ -905,14 +963,15 @@ async function exportXlsx({ c, v, ext, rev }) {
     const r = rev[e.id] || {}; const cc = r.c || {};
     const put = (col, val, bad) => { const cell = ws.getCell(`${col}${rn}`); cell.value = val; if (bad) cell.font = { ...clone(cell.font), color: red, bold: true }; };
     put('E', e.n); put('F', e.zona); put('G', e.area); put('H', e.marca); put('I', e.tipo); put('J', e.capacidad); put('K', e.serie); put('L', e.numero);
-    if (cc.presion) put('M', optLabel('presion', cc.presion), cc.presion !== 'ok');
+    if (cc.presion) put('M', cc.presion === 'ok' ? '✓' : cc.presion === 'na' ? 'n/a' : optLabel('presion', cc.presion), !esBueno(CK.presion, cc.presion));
     for (const k of ['cilindro', 'instrucciones', 'senal', 'marchamo', 'manguera', 'boquilla', 'etiqueta']) {
       const cr = CK[k]; const val = cc[k]; if (!val) continue;
-      const idx = cr.o.findIndex((o) => o[0] === val); put(cr.col[idx], '✓', val !== cr.good);
+      const idx = cr.o.findIndex((o) => o[0] === val); put(cr.col[idx], '✓', !esBueno(cr, val));
     }
     put('AB', r.recAnt || e.recAnt || ''); put('AC', r.recProx || e.recProx || '', ['vencida', 'pronto'].includes(venc(r.recProx || e.recProx)));
-    put('AD', r.ph || e.ph || ''); if (cc.altura) put('AE', optLabel('altura', cc.altura), cc.altura !== 'ok');
-    put('AF', r.obs || '');
+    put('AD', esCO2(e.tipo) ? (r.ph || e.ph || '') : r.t && !r.sit ? 'n/a' : '', esCO2(e.tipo) && phVencido(r.ph || e.ph));
+    const aN = altNum(r.altura || e.altura); if (aN != null) put('AE', aN.toFixed(2), aN > ALT_MAX);
+    put('AF', obsReporte(e, r));
     rn++;
   }
   // Firmas al pie, como en el formato de detectores
@@ -949,9 +1008,9 @@ async function exportPdf({ c, v, ext, rev }) {
   };
   const res = calcResumen(ext, rev); head();
   const limpia = (rows) => rows.map((r) => r.map((x) => (typeof x === 'string' ? x.replace(/₂/g, '2') : x)));
-  doc.autoTable({ startY: 27, margin: { left: M, right: M }, head: [['Extintores', 'Revisados', 'Todo bien', 'Con falla', 'Pendientes', 'Recarga por vencer']],
-    body: [[res.total, res.done, res.ok, res.bad, res.total - res.done, res.pronto]], headStyles: { fillColor: BLUE, halign: 'center' }, bodyStyles: { halign: 'center', fontStyle: 'bold' }, styles: { fontSize: 10 } });
-  const hall = ordenReporte(ext).filter((e) => estado(rev[e.id]) === 'bad').map((e) => [e.n, zonaCorta(e.zona), e.area, [e.marca, e.tipo, e.capacidad].join(' · '), fallasDe(rev[e.id]).join(', '), rev[e.id].obs || '']);
+  doc.autoTable({ startY: 27, margin: { left: M, right: M }, head: [['Extintores', 'Revisados', 'Todo bien', 'Con falla', 'Pendientes', 'Recarga por vencer', 'Soporte por cambiar']],
+    body: [[res.total, res.done, res.ok, res.bad, res.total - res.done, res.pronto, res.sop]], headStyles: { fillColor: BLUE, halign: 'center' }, bodyStyles: { halign: 'center', fontStyle: 'bold' }, styles: { fontSize: 10 } });
+  const hall = ordenReporte(ext).filter((e) => estado(rev[e.id]) === 'bad').map((e) => [e.n, zonaCorta(e.zona), e.area, [e.marca, e.tipo, e.capacidad].join(' · '), fallasDe(rev[e.id]).join(', '), obsReporte(e, rev[e.id])]);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(40); doc.text(`Hallazgos (${hall.length})`, M, doc.lastAutoTable.finalY + 9);
   doc.autoTable({ startY: doc.lastAutoTable.finalY + 12, margin: { left: M, right: M }, head: [['N°', 'Zona', 'Área', 'Extintor', 'Falla', 'Observaciones']], body: hall.length ? limpia(hall) : [['', '', 'Sin fallas registradas', '', '', '']],
     headStyles: { fillColor: RED }, styles: { fontSize: 8.5, cellPadding: 1.8 }, columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 24 }, 2: { cellWidth: 55 }, 3: { cellWidth: 38 } } });
@@ -962,9 +1021,9 @@ async function exportPdf({ c, v, ext, rev }) {
   }
   // Tabla completa con el formato de la hoja 2
   doc.addPage(); head();
-  const yn = (k, val) => (val ? (CK[k].o.find((o) => o[0] === val) || [, ''])[1] : '');
+  const yn = (k, val) => (val ? (k === 'presion' && val === 'na' ? 'n/a' : (CK[k].o.find((o) => o[0] === val) || [, ''])[1]) : '');
   const body = ordenReporte(ext).map((e) => { const r = rev[e.id] || {}; const cc = r.c || {};
-    return [e.n, zonaCorta(e.zona), e.area, e.marca, e.tipo, e.capacidad, e.serie, e.numero, yn('presion', cc.presion), yn('cilindro', cc.cilindro), yn('instrucciones', cc.instrucciones), yn('senal', cc.senal), yn('marchamo', cc.marchamo), yn('manguera', cc.manguera), yn('boquilla', cc.boquilla), yn('etiqueta', cc.etiqueta), r.recAnt || e.recAnt || '', r.recProx || e.recProx || '', r.ph || e.ph || '', yn('altura', cc.altura), r.obs || '']; });
+    return [e.n, zonaCorta(e.zona), e.area, e.marca, e.tipo, e.capacidad, e.serie, e.numero, yn('presion', cc.presion), yn('cilindro', cc.cilindro), yn('instrucciones', cc.instrucciones), yn('senal', cc.senal), yn('marchamo', cc.marchamo), yn('manguera', cc.manguera), yn('boquilla', cc.boquilla), yn('etiqueta', cc.etiqueta), r.recAnt || e.recAnt || '', r.recProx || e.recProx || '', esCO2(e.tipo) ? (r.ph || e.ph || '') : r.t && !r.sit ? 'n/a' : '', altTxt(r.altura || e.altura), obsReporte(e, r)]; });
   const keys = [null, null, null, null, null, null, null, null, 'presion', 'cilindro', 'instrucciones', 'senal', 'marchamo', 'manguera', 'boquilla', 'etiqueta', null, 'recProx', null, 'altura', null];
   doc.autoTable({ startY: 26, margin: { left: M, right: M, top: 26, bottom: 12 }, theme: 'grid',
     head: [[{ content: 'PASO 1 · DESCRIBIR EXTINTOR', colSpan: 8 }, { content: 'PASO 2 · VERIFICAR ESTADO DEL EXTINTOR', colSpan: 13 }],
@@ -974,7 +1033,7 @@ async function exportPdf({ c, v, ext, rev }) {
     columnStyles: { 0: { cellWidth: 7, halign: 'center' }, 1: { cellWidth: 14 }, 2: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 8, halign: 'center' }, 5: { cellWidth: 8, halign: 'center' }, 6: { cellWidth: 11 }, 7: { cellWidth: 10 },
       8: { cellWidth: 11.5, halign: 'center' }, 9: { cellWidth: 10.5, halign: 'center' }, 10: { cellWidth: 8, halign: 'center' }, 11: { cellWidth: 10, halign: 'center' }, 12: { cellWidth: 12, halign: 'center' }, 13: { cellWidth: 12, halign: 'center' }, 14: { cellWidth: 11, halign: 'center' }, 15: { cellWidth: 11, halign: 'center' }, 16: { cellWidth: 11, halign: 'center' }, 17: { cellWidth: 11, halign: 'center' }, 18: { cellWidth: 7.5, halign: 'center' }, 19: { cellWidth: 11.5, halign: 'center' }, 20: { cellWidth: 'auto' } },
     didParseCell: (d) => { if (d.section !== 'body') return; const k = keys[d.column.index]; if (!k) return; const e = ordenReporte(ext)[d.row.index]; const r = rev[e.id] || {};
-      const bad = k === 'recProx' ? ['vencida', 'pronto'].includes(venc(d.cell.raw)) : r.c && r.c[k] && r.c[k] !== CK[k].good;
+      const bad = k === 'recProx' ? ['vencida', 'pronto'].includes(venc(d.cell.raw)) : k === 'altura' ? altNum(d.cell.raw) > ALT_MAX : r.c && r.c[k] && !esBueno(CK[k], r.c[k]);
       if (bad) { d.cell.styles.textColor = RED; d.cell.styles.fontStyle = 'bold'; d.cell.styles.fillColor = [253, 236, 236]; } },
     willDrawPage: (d) => { if (d.pageNumber > 1) head(); } });
   // Firmas al final del reporte
@@ -1032,9 +1091,13 @@ const ACT = {
   ficha: (el) => abrirFicha(el.dataset.id),
   okRapido: (el) => okRapido(el.dataset.id),
   nuevoExt: () => formExtintor(null, ui.q),
-  crit: (el) => { const { k, v } = el.dataset; ed.c[k] = ed.c[k] === v ? '' : v; ed.aviso = ''; pintarFicha(); },
+  sit: (el) => { ed.sit = el.dataset.v; ed.aviso = ''; pintarFicha(); },
+  sop: (el) => { ed.soporte = ed.soporte === el.dataset.v && el.dataset.v ? '' : el.dataset.v; pintarFicha(); },
+  crit: (el) => { const { k, v } = el.dataset; if (k === 'presion') ed.presionAuto = false; ed.c[k] = ed.c[k] === v ? '' : v; ed.aviso = ''; pintarFicha(); },
   todoBien: () => {
     for (const c of CRIT) ed.c[c.k] = c.good;
+    if (esCO2((extDe(ed.eid) || {}).tipo)) ed.c.presion = 'na';
+    ed.sit = '';
     if (ed.prevMalo && ed.obs.trim()) { ed.prevMalo = false; pintarFicha(); $('fObs').style.borderColor = 'var(--warn)'; $('fHint').textContent = 'Ya quedó todo en bien. ¿La observación sigue aplicando? Bórrela o edítela y toque Guardar.'; $('fObs').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     guardarFicha();
   },
