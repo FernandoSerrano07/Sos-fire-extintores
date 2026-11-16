@@ -704,10 +704,11 @@ $('shSig').onclick = () => {
 $('shEditar').onclick = () => { if (ed) formExtintor(ed.eid); };
 
 // ----- Datos del extintor (agregar nuevo o corregir) -----
-async function formExtintor(eid, sugerencia = '') {
-  const e = eid ? extDe(eid) : null; const zonas = zonasDe(S.ext).filter(Boolean);
-  const marcas = [...new Set(S.ext.map((x) => (x.marca || '').trim()).filter(Boolean))];
-  const nextN = S.ext.reduce((m, x) => Math.max(m, +x.n || 0), 0) + 1;
+async function formExtintor(eid, sugerencia = '', adm = false) {
+  const CID = adm ? S.aCid : S.cid, EXT = adm ? S.aExt : S.ext;
+  const e = eid ? EXT.find((x) => x.id === eid) : null; const zonas = zonasDe(EXT).filter(Boolean);
+  const marcas = [...new Set(EXT.map((x) => (x.marca || '').trim()).filter(Boolean))];
+  const nextN = EXT.reduce((m, x) => Math.max(m, +x.n || 0), 0) + 1;
   const zonaDef = e ? e.zona : (ui.zona || zonas[0] || '');
   const html = `
     <label class="field">Zona<input id="xZ" list="xZl" value="${esc(zonaDef)}" placeholder="ZONA #1"><datalist id="xZl">${zonas.map((z) => `<option value="${esc(z)}">`).join('')}</datalist></label>
@@ -728,7 +729,7 @@ async function formExtintor(eid, sugerencia = '') {
     // Mientras escribe, muestra extintores parecidos para no duplicar (como en la app de detectores)
     const sug = () => {
       const a = norm($('xA').value), n = norm($('xN').value), sr = norm($('xS').value);
-      const cand = S.ext.filter((x) => (a.length >= 3 && norm(x.area).includes(a)) || (n.length >= 2 && norm(x.numero) === n) || (sr.length >= 4 && sr !== 'ss' && norm(x.serie) === sr)).slice(0, 3);
+      const cand = EXT.filter((x) => (a.length >= 3 && norm(x.area).includes(a)) || (n.length >= 2 && norm(x.numero) === n) || (sr.length >= 4 && sr !== 'ss' && norm(x.serie) === sr)).slice(0, 3);
       $('xSug').innerHTML = cand.length ? `<div class="sugg"><div class="h">¿Ya existe? Tóquelo para abrirlo en vez de agregarlo:</div>${cand.map((x) => `<button type="button" data-sg="${x.id}"><b>#${esc(x.n)}</b>${esc(x.area)}<small>${esc([x.marca, x.tipo, x.numero ? 'N° ' + x.numero : ''].filter(Boolean).join(' · '))}</small></button>`).join('')}</div>` : '';
     };
     for (const id of ['xA', 'xN', 'xS']) $(id).addEventListener('input', sug);
@@ -739,18 +740,37 @@ async function formExtintor(eid, sugerencia = '') {
   if (!(await p)) { if (abrirOtro) { ui.q = ''; ui.filtro = 'all'; route(); abrirFicha(abrirOtro); } return; }
   if (baja) {
     if (!(await ask('Quitar extintor', `¿Quitar el #${e.n} ${e.area} de la lista? Ya no aparecerá en las próximas visitas.`, 'Quitar'))) return;
-    Cloud.saveExtintor(S.cid, eid, { baja: true, bajaT: Date.now() }).catch(cloudError); cerrarFicha(); toast(`#${e.n} quitado`); return;
+    Cloud.saveExtintor(CID, eid, { baja: true, bajaT: Date.now() }).catch(cloudError); cerrarFicha(); toast(`#${e.n} quitado`); return;
   }
   const d = { zona: $('xZ').value.trim(), area: $('xA').value.trim().replace(/\s+/g, ' '), marca: $('xM').value.trim(), tipo: $('xT').value, capacidad: $('xC').value.trim(), serie: $('xS').value.trim(), numero: $('xN').value.trim(), n: +$('xO').value || nextN };
-  if (!d.area) { toast('Escriba el área del extintor'); return formExtintor(eid, sugerencia); }
-  const dup = S.ext.find((x) => x.id !== eid && d.numero && norm(x.numero) === norm(d.numero) && norm(x.zona) === norm(d.zona));
-  if (dup && !(await ask('Ese número ya existe', `El extintor N° ${d.numero} ya está en ${d.zona || 'esta zona'} (#${dup.n} ${dup.area}). ¿Agregar de todos modos?`, 'Agregar igual'))) return formExtintor(eid, sugerencia);
-  if (e) { Cloud.saveExtintor(S.cid, eid, d).catch(cloudError); Object.assign(e, d); if (ed && ed.eid === eid) { $('shArea').textContent = d.area; $('shZona').textContent = d.zona; pintarFicha(); } toast('Datos actualizados'); route(); return; }
-  const id = Cloud.nuevoIdExtintor(S.cid);
+  if (!d.area) { toast('Escriba el área del extintor'); return formExtintor(eid, sugerencia, adm); }
+  const dup = EXT.find((x) => x.id !== eid && d.numero && norm(x.numero) === norm(d.numero) && norm(x.zona) === norm(d.zona));
+  if (dup && !(await ask('Ese número ya existe', `El extintor N° ${d.numero} ya está en ${d.zona || 'esta zona'} (#${dup.n} ${dup.area}). ¿Agregar de todos modos?`, 'Agregar igual'))) return formExtintor(eid, sugerencia, adm);
+  if (e) { Cloud.saveExtintor(CID, eid, d).catch(cloudError); Object.assign(e, d); if (ed && ed.eid === eid) { $('shArea').textContent = d.area; $('shZona').textContent = d.zona; pintarFicha(); } toast('Datos actualizados'); route(); return; }
+  const id = Cloud.nuevoIdExtintor(CID);
   const nuevo = { ...d, recAnt: '', recProx: '', ph: '', nuevo: true, creado: Date.now(), creadoPor: yo() };
-  Cloud.saveExtintor(S.cid, id, nuevo).catch(cloudError);
-  S.ext = S.ext.concat([{ id, ...nuevo }]).sort((a, b) => (a.n || 0) - (b.n || 0));
+  Cloud.saveExtintor(CID, id, nuevo).catch(cloudError);
+  EXT = EXT.concat([{ id, ...nuevo }]).sort((a, b) => (a.n || 0) - (b.n || 0));
   ui.q = ''; ui.filtro = 'all'; guardarResumen(`${yo().split(' ')[0]} agregó el extintor #${d.n} en ${d.area}`); route(); abrirFicha(id);
+}
+
+
+// Carga una lista de extintores desde Excel: actualiza los que tienen el mismo N° y agrega los que no existen.
+async function importarExtintores(file) {
+  if (!file) return;
+  try {
+    const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer()); const ws = wb.worksheets[0];
+    const txt = (v) => (v == null ? '' : typeof v === 'object' ? String(v.text != null ? v.text : v.result != null ? v.result : (v.richText ? v.richText.map((x) => x.text).join('') : '')) : String(v)).trim();
+    const filas = []; ws.eachRow((row, i) => { if (i === 1) return; const g = (k) => txt(row.getCell(k).value); const n = +g(1); if (!n) return; filas.push({ n, zona: g(2), area: g(3), marca: g(4), tipo: g(5), capacidad: g(6), serie: g(7), numero: g(8) }); });
+    if (!filas.length) return toast('No encontré filas. Use la columnas: N°, Zona, Área, Marca, Tipo, Capacidad, Serie, Número');
+    const por = new Map(S.aExt.map((e) => [e.n, e])); const camb = []; const nuevos = [];
+    for (const f of filas) { const e = por.get(f.n); if (!e) { nuevos.push(f); continue; } const dif = Object.keys(f).filter((k) => String(e[k] == null ? '' : e[k]) !== String(f[k])); if (dif.length) camb.push({ e, f }); }
+    if (!camb.length && !nuevos.length) return toast('La lista ya está igual que en la app');
+    if (!(await ask('Cargar Excel', `${camb.length} extintor(es) se van a corregir y ${nuevos.length} nuevo(s) se van a agregar. Las revisiones ya hechas no se tocan.`, 'Aplicar'))) return;
+    for (const { e, f } of camb) await Cloud.saveExtintor(S.aCid, e.id, f);
+    if (nuevos.length) await Cloud.addExtintores(S.aCid, nuevos.map((f) => ({ ...f, recAnt: '', recProx: '', ph: '' })));
+    toast(`Listo: ${camb.length} corregidos, ${nuevos.length} agregados`);
+  } catch (e) { cloudError(e); }
 }
 
 /* ======================= 6) Administrador ======================= */
@@ -956,7 +976,11 @@ function renderACliente(cid) {
     </div></div>` : `<div class="emptyc">Este proyecto no tiene visitas todavía. Pulse <b>Iniciar visita de hoy</b> para empezar.</div>`}
     <div class="cols"><div class="main"><div class="card2">${hd('clock', 'v', 'Historial de visitas', S.aVisitas.length)}<div class="tbl"><table><thead><tr><th>Fecha</th><th>Técnicos</th><th>Resultado</th><th>Estado</th><th style="text-align:right;padding-right:18px">Reporte</th></tr></thead><tbody>
       ${S.aVisitas.map((x) => `<tr${x.id === S.aVid ? ' style="background:#FAFAFB"' : ''}><td><b>${fmtFecha(x.fecha)}</b></td><td><div class="stack">${Object.entries(x.tecnicos || {}).slice(0, 4).map(([u, t]) => avatar(t.nombre, u)).join('')}</div></td><td>${x.resumen ? `<b>${x.resumen.done}/${x.resumen.total}</b> revisados${x.resumen.bad ? ` · <span style="color:var(--red-ink);font-weight:600">${x.resumen.bad} con falla</span>` : ''}` : '—'}</td><td>${x.estado === 'en_curso' ? '<span class="stt live"><i></i>En curso</span>' : '<span class="stt done"><i></i>Terminada</span>'}</td><td style="text-align:right;padding-right:18px;white-space:nowrap"><button class="btn sm" data-act="selV" data-id="${x.id}">Ver</button> <button class="btn sm" data-act="xlsxV" data-id="${x.id}" style="color:#107C41">Excel</button> <button class="btn sm" data-act="pdfV" data-id="${x.id}" style="color:var(--red)">PDF</button></td></tr>`).join('') || '<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin visitas.</td></tr>'}
-    </tbody></table></div></div></div>
+    </tbody></table></div></div>
+      <div class="card2">${hd('wrench', 'n', 'Extintores del proyecto', ext.length)}<div class="bd">
+        <div class="inline" style="margin-bottom:10px"><input id="aExtQ" placeholder="Buscar por N°, área, marca, serie…" style="flex:1;min-width:160px;height:38px;border:1.5px solid #ddd;border-radius:10px;padding:0 10px"><button class="btn sm" data-act="aExtNuevo">+ Agregar</button><button class="btn sm" data-act="aExtExcel">⬇ Lista Excel</button><button class="btn sm" data-act="aExtImp">⬆ Cargar Excel</button></div>
+        <div class="tbl" style="max-height:420px;overflow:auto"><table><thead><tr><th>N°</th><th>Zona</th><th>Área</th><th>Extintor</th><th></th></tr></thead><tbody id="aExtT">${ext.map((e) => `<tr data-q="${esc(norm([e.n, e.zona, e.area, e.marca, e.tipo, e.capacidad, e.serie, e.numero].join(' ')))}"><td><b>${esc(e.n)}</b></td><td>${esc(zonaCorta(e.zona || ''))}</td><td>${esc(e.area)}</td><td>${esc([e.marca, e.tipo, e.capacidad, e.numero && 'N° ' + e.numero].filter(Boolean).join(' · '))}</td><td style="text-align:right"><button class="btn sm" data-act="aExtEd" data-id="${e.id}">✎ Editar</button></td></tr>`).join('')}</tbody></table></div></div></div>
+    </div>
     <div class="side"><div class="card2 side2">${hd('wrench', 'n', 'Datos del proyecto', null)}<div class="bd">
       <label class="field">Cliente<input id="cN" value="${esc(c.nombre)}"></label>
       <label class="field">Lugar o sede<input id="cL" value="${esc(c.lugar || '')}"></label>
@@ -964,8 +988,10 @@ function renderACliente(cid) {
       ${c.frecuencia === 'semanal' ? `<label class="field">Día de visita<select id="cD">${DIAS.map((d, i) => `<option value="${i}" ${+c.dia === i ? 'selected' : ''}>${d}</option>`).join('')}</select></label>` : ''}
       <div class="inline"><button class="btn sm pri" data-act="guardarCliente">Guardar cambios</button><button class="btn sm" data-act="fijar" data-id="${c.id}">${c.fijado ? 'Quitar de fijados' : 'Fijar arriba'}</button>
       ${v && v.estado === 'en_curso' ? '<button class="btn sm" data-act="terminarA">Terminar visita</button>' : v ? '<button class="btn sm" data-act="reabrirA">Reabrir visita</button>' : ''}</div>
+      <div class="inline" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">${v ? '<button class="btn sm" data-act="borrarVisitaA" style="color:#C90012">Borrar esta visita</button>' : ''}<button class="btn sm" data-act="borrarClienteA" style="color:#C90012">Eliminar proyecto</button></div>
     </div></div></div></div>
   </main></div>`;
+  if ($('aExtQ')) { $('aExtQ').value = ui.aq || ''; const fl = () => { const q = norm($('aExtQ').value); ui.aq = $('aExtQ').value; document.querySelectorAll('#aExtT tr').forEach((tr) => { tr.style.display = !q || tr.dataset.q.includes(q) ? '' : 'none'; }); }; $('aExtQ').oninput = fl; fl(); }
   if ($('selV')) $('selV').onchange = (e) => { verVisitaAdm(e.target.value); redraw(); };
 }
 
@@ -1234,6 +1260,27 @@ const ACT = {
   vCliSel: (el) => { ui.vCli = el.dataset.id; renderAHome(); },
   verVenc: () => { const v = vencimientos(); if (!v.mes.length && v.venc.length) ui.vTab = 'venc'; renderAHome(); const s = $('secVenc'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
   xlsxVenc: () => run(exportVencimientos),
+  aExtEd: (el) => formExtintor(el.dataset.id, '', true),
+  aExtNuevo: () => formExtintor(null, '', true),
+  aExtExcel: async () => {
+    const c = cliente(S.aCid); const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Extintores');
+    ws.columns = [['N°', 6], ['Zona', 24], ['Área', 40], ['Marca', 14], ['Tipo', 8], ['Capacidad', 11], ['Serie', 16], ['Número', 12]].map(([header, width]) => ({ header, width }));
+    S.aExt.forEach((e) => ws.addRow([e.n, e.zona, e.area, e.marca, e.tipo, e.capacidad, e.serie, e.numero]));
+    ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } }; ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1D4E90' } }; ws.views = [{ state: 'frozen', ySplit: 1 }];
+    const buf = await wb.xlsx.writeBuffer(); descargar(`Extintores_${(c ? c.nombre : 'proyecto').replace(/\s+/g, '_')}.xlsx`, new Blob([buf], { type: 'application/octet-stream' }));
+  },
+  aExtImp: () => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.xlsx'; i.onchange = () => importarExtintores(i.files[0]); i.click(); },
+  borrarVisitaA: async () => {
+    const v = S.aVisitas.find((x) => x.id === S.aVid); if (!v) return;
+    if (!(await ask('Borrar visita', `Se borrará la visita del ${fmtFecha(v.fecha)} con todas sus revisiones y firmas. No se puede deshacer. Descargue antes el reporte si lo necesita.`, 'Borrar'))) return;
+    try { await Cloud.borrarVisita(v.id); S.aVid = null; toast('Visita borrada'); route(); } catch (e) { cloudError(e); }
+  },
+  borrarClienteA: async () => {
+    const c = cliente(S.aCid); if (!c) return;
+    if (!(await ask('Eliminar proyecto', `Se borrará "${c.nombre}" con sus ${S.aExt.length} extintores y todas sus visitas, revisiones y firmas. No se puede deshacer. Descargue antes los reportes.`, 'Eliminar'))) return;
+    if (!(await ask('¿Seguro?', `Última confirmación: eliminar "${c.nombre}" para siempre.`, 'Sí, eliminar'))) return;
+    try { const id = c.id; await Cloud.borrarCliente(id); toast('Proyecto eliminado'); location.hash = '#/'; } catch (e) { cloudError(e); }
+  },
   reabrirA: () => Cloud.updateVisita(S.aVid, { estado: 'en_curso' }).catch(cloudError),
   guardarCliente: () => { const p = { nombre: $('cN').value.trim(), lugar: $('cL').value.trim(), frecuencia: $('cF').value }; if ($('cD')) p.dia = +$('cD').value; else if (p.frecuencia === 'semanal') p.dia = new Date().getDay(); if (!p.nombre) return toast('Escriba el nombre del cliente'); Cloud.updateCliente(S.aCid, p).then(() => toast('Proyecto actualizado')).catch(cloudError); },
   cargarDecameron: () => run(async () => {
