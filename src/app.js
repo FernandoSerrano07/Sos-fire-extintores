@@ -479,11 +479,10 @@ function bloqueFirmas(v, c) {
   const f = F(v); const abierta = v.estado === 'en_curso';
   const tecDef = f.tecNombre != null ? f.tecNombre : tecnicosDe(v) || yo();
   if (!abierta) return `<div class="card"><h3>Firmas</h3><div class="firmasRO">
-      <div><span class="lbl">Técnico SOS FIRE</span>${f.tec ? `<img src="${f.tec}" alt="Firma técnico">` : '<div class="nofirma">Sin firma</div>'}<b>${esc(tecDef || '—')}</b></div>
+      <div><span class="lbl">Equipo SOS FIRE</span>${f.tec ? `<img src="${f.tec}" alt="Firma Equipo SOS FIRE">` : '<div class="nofirma">Sin firma</div>'}<b>Equipo SOS FIRE</b></div>
       <div><span class="lbl">${esc(encLabel(c))}</span>${f.enc ? `<img src="${f.enc}" alt="Firma encargado">` : '<div class="nofirma">Sin firma</div>'}<b>${esc(f.encNombre || '—')}</b></div></div></div>`;
   return `<div class="card nore-wrap"><h3>Cierre de visita · firmas</h3><p class="muted" style="margin:-4px 0 10px;font-size:12.5px">Firmen con el dedo. Salen en el Excel y el PDF del reporte.</p>
-    <label class="field">Nombre técnico SOS FIRE<input class="nore" id="fTecN" value="${esc(tecDef)}" placeholder="Nombre y apellido" autocomplete="off"></label>
-    <div class="sigrow"><label>Firma técnico</label><button class="linkb" data-act="sigClr" data-id="tec">Borrar firma</button></div>
+    <div class="sigrow"><label>Firma Equipo SOS FIRE</label><button class="linkb" data-act="sigClr" data-id="tec">Borrar firma</button></div>
     <canvas class="sig" id="sigTec"></canvas>
     <label class="field" style="margin-top:14px">Nombre del ${esc(encLabel(c).replace('Encargado', 'encargado'))}<input class="nore" id="fEncN" value="${esc(f.encNombre || '')}" placeholder="Nombre y apellido" autocomplete="off"></label>
     <div class="sigrow"><label>Firma ${esc(encLabel(c).replace('Encargado', 'encargado'))}</label><button class="linkb" data-act="sigClr" data-id="enc">Borrar firma</button></div>
@@ -830,7 +829,7 @@ function renderACliente(cid) {
       <div class="card2 side2">${hd('users', 'b', v.estado === 'en_curso' ? 'Técnicos en campo' : 'Técnicos de la visita', tecs.length)}<div class="bd" style="padding-top:4px;padding-bottom:6px">${tecs.map(([u, t]) => `<div class="tcard">${avatar(t.nombre, u).replace('</span>', online(t.visto) ? '<i class="on"></i></span>' : '</span>')}<div class="i"><b>${esc(t.nombre)}</b><small>${online(t.visto) ? '<span style="color:var(--ok);font-weight:600">● En línea</span>' : t.visto ? 'Visto ' + hace(t.visto) : 'Desconectado'}</small></div><div class="n"><b>${porTec[u] || 0}</b><small>revisados</small></div></div>`).join('') || '<p class="muted" style="margin:10px 0">Nadie ha entrado todavía.</p>'}</div></div>
       <div class="card2 side2">${hd('live', 'g', v.estado === 'en_curso' ? 'Actividad en vivo' : 'Actividad', null)}<div class="bd"><div class="tl">${feed.map((x) => { const e = ext.find((y) => y.id === x.eid); const s = estado(x); return `<div class="it"><span class="dt ic ${s === 'bad' ? 'r' : 'g'}">${s === 'bad' ? ICON.alert : ICON.check}</span><div class="tx"><b>${esc((x.by || '').split(' ')[0])}</b> ${s === 'bad' ? 'marcó con falla' : 'revisó'} <b>#${esc(e ? e.n : '')}</b> ${esc(e ? e.area : '')}${s === 'bad' ? ' · ' + esc(fallasDe(x).join(', ')) : ''}<small>${new Date(x.t).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })} · ${hace(x.t)}</small></div></div>`; }).join('') || '<span class="muted">Sin revisiones todavía.</span>'}</div></div></div>
       <div class="card2 side2">${hd('check', 'v', 'Firmas', null)}<div class="bd"><div class="firmasRO">
-        <div><span class="lbl">Técnico SOS FIRE</span>${F(v).tec ? `<img src="${F(v).tec}" alt="Firma técnico">` : '<div class="nofirma">Sin firma todavía</div>'}<b>${esc((F(v).tecNombre != null ? F(v).tecNombre : tecnicosDe(v)) || '—')}</b></div>
+        <div><span class="lbl">Equipo SOS FIRE</span>${F(v).tec ? `<img src="${F(v).tec}" alt="Firma técnico">` : '<div class="nofirma">Sin firma todavía</div>'}<b>Equipo SOS FIRE</b></div>
         <div><span class="lbl">${esc(encLabel(c))}</span>${F(v).enc ? `<img src="${F(v).enc}" alt="Firma encargado">` : '<div class="nofirma">Sin firma todavía</div>'}<b>${esc(F(v).encNombre || '—')}</b></div></div></div></div>
     </div></div>` : `<div class="emptyc">Este proyecto no tiene visitas todavía. Pulse <b>Iniciar visita de hoy</b> para empezar.</div>`}
     <div class="cols"><div class="main"><div class="card2">${hd('clock', 'v', 'Historial de visitas', S.aVisitas.length)}<div class="tbl"><table><thead><tr><th>Fecha</th><th>Técnicos</th><th>Resultado</th><th>Estado</th><th style="text-align:right;padding-right:18px">Reporte</th></tr></thead><tbody>
@@ -892,9 +891,9 @@ async function exportXlsx({ c, v, ext, rev }) {
   const clone = (st) => JSON.parse(JSON.stringify(st || {}));
   const set = (addr, val) => { const cell = ws.getCell(addr); cell.style = clone(cell.style); cell.value = val; };
   // La banda con el logo de Decameron solo va en los reportes de Decameron
-  if (!/decameron/i.test(c.nombre)) { ws._media = []; const img = wb.addImage({ base64: LOGO_B64, extension: 'png' }); ws.addImage(img, { tl: { col: 1.2, row: 0.3 }, ext: { width: 520, height: 160 } }); }
+  if (!/decameron/i.test(c.nombre)) { ws._media = []; const img = wb.addImage({ base64: LOGO_B64, extension: 'png' }); ws.addImage(img, { tl: { col: 4.2, row: 0.15 }, ext: { width: 150, height: 58 } }); }
   set('F4', c.pais || 'El Salvador'); set('M4', c.lugar || c.nombre);
-  set('I3', 'Fecha de inspección'); set('I4', fmtFecha(v.fecha)); set('T3', 'Técnico(s)'); set('T4', tecnicosDe(v));
+  set('I3', 'Fecha de inspección'); set('I4', fmtFecha(v.fecha)); for (const r of ['T3:U3', 'T4:U4']) ws.unMergeCells(r); ws.mergeCells('T3:AA3'); ws.mergeCells('T4:AA4'); set('T3', 'Realizado por'); set('T4', 'Equipo SOS FIRE');
   const proto = ws.getRow(9); const protoSt = {}; for (let col = 2; col <= 35; col++) protoSt[col] = clone(proto.getCell(col).style);
   const h = proto.height;
   const lista = ordenReporte(ext); let rn = 9;
@@ -922,13 +921,13 @@ async function exportXlsx({ c, v, ext, rev }) {
   // La plantilla está a escala grande (filas de ~194 pt, letra 72): el bloque de firmas se escala igual
   const k = Math.max(1, (h || 27) / 27);
   const bloque = (c1, c2, titulo, nombre, firma, etiqueta) => {
-    ws.mergeCells(`${c1}${r1}:${c2}${r1}`); const t = ws.getCell(`${c1}${r1}`); t.value = `${titulo}: ${nombre || ''}`; t.font = { bold: true, size: Math.round(10 * k) }; t.alignment = { vertical: 'middle' };
+    ws.mergeCells(`${c1}${r1}:${c2}${r1}`); const t = ws.getCell(`${c1}${r1}`); t.value = titulo ? `${titulo}: ${nombre || ''}` : nombre; t.font = { bold: true, size: Math.round(10 * k) }; t.alignment = { vertical: 'middle' };
     ws.mergeCells(`${c1}${r2}:${c2}${r2}`); ws.getCell(`${c1}${r2}`).border = { bottom: { style: 'medium', color: { argb: 'FF7F7F7F' } } };
     ws.mergeCells(`${c1}${r3}:${c2}${r3}`); const l = ws.getCell(`${c1}${r3}`); l.value = etiqueta; l.font = { size: Math.round(9 * k), color: { argb: 'FF555555' } }; l.alignment = { horizontal: 'center', vertical: 'top' };
     if (firma) { const col = ws.getColumn(c1).number - 1; ws.addImage(wb.addImage({ base64: firma.split(',')[1], extension: 'png' }), { tl: { col: col + 0.4, row: r2 - 1 + 0.08 }, ext: { width: Math.round(230 * k), height: Math.round(76 * k) } }); }
   };
   ws.getRow(r1).height = Math.round(22 * k); ws.getRow(r2).height = Math.round(64 * k); ws.getRow(r3).height = Math.round(18 * k);
-  bloque('E', 'L', 'Técnico SOS FIRE', f.tecNombre != null ? f.tecNombre : tecnicosDe(v), f.tec, 'Firma técnico');
+  bloque('E', 'L', '', 'Equipo SOS FIRE', f.tec, 'Firma Equipo SOS FIRE');
   bloque('T', 'AE', encLabel(c), f.encNombre, f.enc, 'Firma ' + encLabel(c).replace('Encargado', 'encargado'));
   rn = r3 + 1;
   ws.pageSetup = { ...ws.pageSetup, paperSize: 1, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: '5:8', printArea: `B1:AI${Math.max(9, rn - 1)}`, horizontalCentered: true };
@@ -946,7 +945,7 @@ async function exportPdf({ c, v, ext, rev }) {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...BLUE);
     doc.text('INSPECCIÓN DE EXTINTORES', W - M, 12, { align: 'right' });
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(60);
-    doc.text(`${c.nombre}${c.lugar && c.lugar !== c.nombre ? ' · ' + c.lugar : ''} · ${fmtFecha(v.fecha)} · Técnico(s): ${tecnicosDe(v) || '—'}`, W - M, 18, { align: 'right' });
+    doc.text(`${c.nombre}${c.lugar && c.lugar !== c.nombre ? ' · ' + c.lugar : ''} · ${fmtFecha(v.fecha)} · Equipo SOS FIRE`, W - M, 18, { align: 'right' });
   };
   const res = calcResumen(ext, rev); head();
   const limpia = (rows) => rows.map((r) => r.map((x) => (typeof x === 'string' ? x.replace(/₂/g, '2') : x)));
@@ -982,13 +981,13 @@ async function exportPdf({ c, v, ext, rev }) {
   const f = F(v); let y = doc.lastAutoTable.finalY + 10;
   if (y + 46 > H - 12) { doc.addPage(); head(); y = 32; }
   const bw = (W - 2 * M - 20) / 2;
-  [[M, 'Técnico SOS FIRE', f.tecNombre != null ? f.tecNombre : tecnicosDe(v), f.tec], [M + bw + 20, encLabel(c), f.encNombre, f.enc]].forEach(([x, titulo, nombre, firma]) => {
+  [[M, 'Equipo SOS FIRE', 'Equipo SOS FIRE', f.tec, ''], [M + bw + 20, encLabel(c), f.encNombre, f.enc, encLabel(c)]].forEach(([x, titulo, nombre, firma, sub]) => {
     doc.setDrawColor(200); doc.setLineWidth(0.3); doc.roundedRect(x, y, bw, 44, 2, 2);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...GRAY); doc.text(('Firma ' + titulo).toUpperCase(), x + 4, y + 6);
     if (firma) { try { doc.addImage(firma, 'PNG', x + bw / 2 - 30, y + 8, 60, 20); } catch (e) {} } else { doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(170); doc.text('Sin firma', x + bw / 2, y + 20, { align: 'center' }); }
     doc.setDrawColor(120); doc.line(x + 12, y + 31, x + bw - 12, y + 31);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(40); doc.text(String(nombre || '—'), x + bw / 2, y + 37, { align: 'center' });
-    doc.setFontSize(7.5); doc.setTextColor(120); doc.text(titulo, x + bw / 2, y + 41.5, { align: 'center' });
+    doc.setFontSize(7.5); doc.setTextColor(120); if (sub) doc.text(sub, x + bw / 2, y + 41.5, { align: 'center' });
   });
   const n = doc.getNumberOfPages();
   for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(130); doc.text(`SOS FIRE · ${c.nombre} · ${fmtFecha(v.fecha)}`, M, H - 5); doc.text(`Página ${i} de ${n}`, W - M, H - 5, { align: 'right' }); }
@@ -1042,7 +1041,7 @@ const ACT = {
   recargaHoy: () => { ed.recAnt = mesActual(); ed.recProx = sumarMeses(ed.recAnt, 12); const o = ed.obs.split(';').map((x) => x.trim()).filter(Boolean); if (!o.includes('Recargado')) o.push('Recargado'); ed.obs = o.join('; '); pintarFicha(); },
   qobs: (el) => { let p = ed.obs.split(';').map((x) => x.trim()).filter(Boolean); const q = el.dataset.q; p = p.includes(q) ? p.filter((x) => x !== q) : [...p, q]; ed.obs = p.join('; '); pintarFicha(); },
   terminar: async () => {
-    const f = F(S.visita); const falta = [!f.tec && 'la firma del técnico', !f.enc && 'la firma del encargado'].filter(Boolean);
+    const f = F(S.visita); const falta = [!f.tec && 'la firma del Equipo SOS FIRE', !f.enc && 'la firma del encargado'].filter(Boolean);
     if (falta.length && !(await ask('Faltan firmas', `Falta ${falta.join(' y ')}. Puede firmar abajo en "Cierre de visita". ¿Terminar la visita sin ${falta.length > 1 ? 'ellas' : 'ella'}?`, 'Terminar sin firmas'))) { const cv = $(!f.tec ? 'sigTec' : 'sigEnc'); if (cv) cv.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     if (!falta.length && !(await ask('Terminar visita', 'La visita queda cerrada y pasa al historial con las firmas. Si falta algo, el administrador puede reabrirla.', 'Terminar'))) return;
     if (f.tecNombre == null) Cloud.updateVisita(S.vid, { 'firmas.tecNombre': tecnicosDe(S.visita) || yo() }).catch(cloudError); await Cloud.updateVisita(S.vid, { estado: 'terminada', cerrada: Date.now(), resumen: calcResumen(S.ext, S.rev), ultimaAct: { texto: `${yo().split(' ')[0]} terminó la visita`, t: Date.now(), by: yo() } }).catch(cloudError); toast('Visita terminada'); go('#/'); },
