@@ -123,16 +123,22 @@ const S = {
   vid: null, visita: null, cid: null, ext: [], rev: {}, revOk: false,
   // administración de un cliente
   aCid: null, aVid: null, aVisitas: [], aExt: [], aRev: {},
+  // vencimientos: extintores de todos los proyectos
+  allExt: {},
 };
 const U = { list: [], v: [], a: [] }; // suscripciones: generales, de visita, de admin
 const stopAll = (k) => { U[k].forEach((u) => { try { u(); } catch (e) {} }); U[k] = []; };
 const esAdmin = () => S.rol === 'admin';
 const yo = () => (S.me && S.me.nombre) || '';
 const online = (t) => t && Date.now() - t < 3 * 60000;
-const ui = { q: '', zona: '', filtro: 'all', limit: 80, hq: '', hmes: '' };
+const ui = { q: '', zona: '', filtro: 'all', limit: 80, hq: '', hmes: '', vTab: 'mes', vCli: '' };
+const UX = {}; // suscripciones a extintores por cliente (panel de vencimientos)
 
 let redrawT = null;
-function redraw() { clearTimeout(redrawT); redrawT = setTimeout(route, 40); }
+let sigBusy = false;
+// No se redibuja mientras alguien firma o escribe su nombre en el cierre; se hace al terminar
+const bloqueado = () => sigBusy || !!(document.activeElement && document.activeElement.closest && document.activeElement.closest('.nore'));
+function redraw() { clearTimeout(redrawT); redrawT = setTimeout(() => (bloqueado() ? redraw() : route()), bloqueado() ? 400 : 40); }
 function cloudError(e) { console.error(e); if (e && e.code === 'permission-denied') toast('Sin permiso. Pida acceso al administrador.'); }
 
 function iniciarDatos() {
@@ -457,10 +463,56 @@ function renderReporte() {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn xl" data-act="xlsx" style="height:52px">⬇ Excel</button><button class="btn pri" data-act="pdf" style="height:52px">⬇ PDF</button></div></div>
       <div class="card"><h3>Recarga por vencer (${porVencer.length})</h3>${porVencer.length ? porVencer.map((e) => `<div class="feed" style="cursor:pointer" data-act="ficha" data-id="${e.id}"><span class="tm"><b>#${esc(e.n)}</b></span><span style="flex:1">${esc(e.area)}<br><span class="muted">${esc([e.marca, e.tipo, e.capacidad].join(' · '))}</span></span>${vencPill(e, S.rev[e.id])}</div>`).join('') : '<p class="muted" style="margin:0;font-size:13px">Ninguno vence este mes ni el siguiente.</p>'}</div>
       <div class="card"><h3>Hallazgos (${fallas.length})</h3>${fallas.length ? fallas.map((e) => `<div class="feed" style="cursor:pointer" data-act="ficha" data-id="${e.id}"><span class="tm"><b>#${esc(e.n)}</b></span><span style="flex:1"><b>${esc(e.area)}</b><br><span class="muted">${esc(fallasDe(S.rev[e.id]).join(' · '))}${S.rev[e.id].obs ? ' — ' + esc(S.rev[e.id].obs) : ''}</span></span><b style="color:var(--red)">Corregir ›</b></div>`).join('') : '<p class="muted" style="margin:0;font-size:13px">Sin fallas registradas.</p>'}</div>
-      ${v && v.estado === 'en_curso' ? `<button class="btn" data-act="terminar">Terminar visita</button>` : v ? `<p class="muted" style="text-align:center;font-size:13px">Visita terminada ${hhmm(v.cerrada)}</p>` : ''}
+      ${v ? bloqueFirmas(v, c) : ''}
+      ${v && v.estado === 'en_curso' ? `<button class="btn pri" data-act="terminar" style="height:52px">Terminar visita</button>` : v ? `<p class="muted" style="text-align:center;font-size:13px">Visita terminada ${hhmm(v.cerrada)}</p>` : ''}
     </div>
     ${navTec('rep')}
   </div>`;
+  if (v) iniciarFirmas(v);
+}
+
+
+/* ----- Firmas del técnico y del encargado (cierre de visita) ----- */
+const F = (v) => (v && v.firmas) || {};
+const encLabel = (c) => `Encargado ${c ? String(c.nombre).split(/\s+/)[0].toUpperCase() : 'del cliente'}`;
+function bloqueFirmas(v, c) {
+  const f = F(v); const abierta = v.estado === 'en_curso';
+  const tecDef = f.tecNombre != null ? f.tecNombre : tecnicosDe(v) || yo();
+  if (!abierta) return `<div class="card"><h3>Firmas</h3><div class="firmasRO">
+      <div><span class="lbl">Técnico SOS FIRE</span>${f.tec ? `<img src="${f.tec}" alt="Firma técnico">` : '<div class="nofirma">Sin firma</div>'}<b>${esc(tecDef || '—')}</b></div>
+      <div><span class="lbl">${esc(encLabel(c))}</span>${f.enc ? `<img src="${f.enc}" alt="Firma encargado">` : '<div class="nofirma">Sin firma</div>'}<b>${esc(f.encNombre || '—')}</b></div></div></div>`;
+  return `<div class="card nore-wrap"><h3>Cierre de visita · firmas</h3><p class="muted" style="margin:-4px 0 10px;font-size:12.5px">Firmen con el dedo. Salen en el Excel y el PDF del reporte.</p>
+    <label class="field">Nombre técnico SOS FIRE<input class="nore" id="fTecN" value="${esc(tecDef)}" placeholder="Nombre y apellido" autocomplete="off"></label>
+    <div class="sigrow"><label>Firma técnico</label><button class="linkb" data-act="sigClr" data-id="tec">Borrar firma</button></div>
+    <canvas class="sig" id="sigTec"></canvas>
+    <label class="field" style="margin-top:14px">Nombre del ${esc(encLabel(c).replace('Encargado', 'encargado'))}<input class="nore" id="fEncN" value="${esc(f.encNombre || '')}" placeholder="Nombre y apellido" autocomplete="off"></label>
+    <div class="sigrow"><label>Firma ${esc(encLabel(c).replace('Encargado', 'encargado'))}</label><button class="linkb" data-act="sigClr" data-id="enc">Borrar firma</button></div>
+    <canvas class="sig" id="sigEnc"></canvas></div>`;
+}
+function sigPad(cv, key) {
+  if (!cv) return;
+  const r = window.devicePixelRatio || 1; const w = cv.clientWidth, h = cv.clientHeight; cv.width = w * r; cv.height = h * r;
+  const ctx = cv.getContext('2d'); ctx.scale(r, r); ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#1a1a1a';
+  const prev = F(S.visita)[key]; if (prev) { const im = new Image(); im.onload = () => ctx.drawImage(im, 0, 0, w, h); im.src = prev; }
+  let drawing = false, last = null, rayas = false;
+  const pt = (e) => { const b = cv.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top]; };
+  cv.onpointerdown = (e) => { drawing = true; sigBusy = true; last = pt(e); cv.setPointerCapture(e.pointerId); };
+  cv.onpointermove = (e) => { if (!drawing) return; const p = pt(e); ctx.beginPath(); ctx.moveTo(...last); ctx.lineTo(...p); ctx.stroke(); last = p; rayas = true; };
+  const end = () => { if (!drawing) return; drawing = false; sigBusy = false; if (!rayas) return;
+    // Se guarda a tamaño normal para que sincronice rápido
+    const o = document.createElement('canvas'); o.width = w; o.height = h; o.getContext('2d').drawImage(cv, 0, 0, w, h);
+    const url = o.toDataURL('image/png'); S.visita.firmas = { ...F(S.visita), [key]: url };
+    Cloud.updateVisita(S.vid, { [`firmas.${key}`]: url, [`firmas.${key}T`]: Date.now() }).catch(cloudError); };
+  cv.onpointerup = end; cv.onpointercancel = end;
+}
+function iniciarFirmas(v) {
+  if (v.estado !== 'en_curso') return;
+  sigPad($('sigTec'), 'tec'); sigPad($('sigEnc'), 'enc');
+  for (const [id, k] of [['fTecN', 'tecNombre'], ['fEncN', 'encNombre']]) {
+    const el = $(id); if (!el) continue; let t = null;
+    el.oninput = () => { S.visita.firmas = { ...F(S.visita), [k]: el.value }; clearTimeout(t); t = setTimeout(() => Cloud.updateVisita(S.vid, { [`firmas.${k}`]: el.value.trim() }).catch(cloudError), 600); };
+    el.onblur = () => { clearTimeout(t); Cloud.updateVisita(S.vid, { [`firmas.${k}`]: el.value.trim() }).catch(cloudError); };
+  }
 }
 
 /* ======================= 5) Ficha de inspección ======================= */
@@ -599,7 +651,65 @@ const tecChips = (v) => {
 };
 const barRes = (r, h = 10) => (r ? `<div class="bar" style="height:${h}px"><i style="width:${(r.ok / Math.max(1, r.total)) * 100}%;background:var(--ok)"></i><i style="width:${(r.bad / Math.max(1, r.total)) * 100}%;background:var(--red)"></i></div>` : `<div class="bar" style="height:${h}px"></div>`);
 
+
+/* ----- Vencimientos de recarga (todos los proyectos) ----- */
+const mesesDif = (mmaaaa) => { const m = String(mmaaaa || '').match(/^(\d{1,2})\/(\d{4})$/); if (!m) return null; const d = new Date(); return (+m[2] * 12 + (+m[1] - 1)) - (d.getFullYear() * 12 + d.getMonth()); };
+function vigilarExtintores() {
+  if (!esAdmin()) return;
+  const ids = new Set(S.clientes.map((c) => c.id));
+  for (const cid of Object.keys(UX)) if (!ids.has(cid)) { UX[cid](); delete UX[cid]; delete S.allExt[cid]; }
+  for (const cid of ids) if (!UX[cid]) UX[cid] = Cloud.watchExtintores(cid, (l) => { S.allExt[cid] = l.filter((e) => !e.baja); if (location.hash === '#/' || location.hash === '') redraw(); }, cloudError);
+}
+function vencimientos() {
+  const out = { venc: [], mes: [], prox: [] };
+  for (const c of S.clientes) for (const e of S.allExt[c.id] || []) {
+    const d = mesesDif(e.recProx); if (d == null || d > 1) continue;
+    out[d < 0 ? 'venc' : d === 0 ? 'mes' : 'prox'].push({ c, e, d });
+  }
+  const ord = (a, b) => a.c.nombre.localeCompare(b.c.nombre) || a.d - b.d || (a.e.n || 0) - (b.e.n || 0);
+  for (const k in out) out[k].sort(ord);
+  return out;
+}
+const V_TABS = [['mes', 'Vencen este mes'], ['venc', 'Ya vencidos'], ['prox', 'Vencen el próximo mes']];
+function seccionVencimientos() {
+  const V = vencimientos(); const cargando = S.clientes.some((c) => !S.allExt[c.id]);
+  const lista = V[ui.vTab].filter((x) => !ui.vCli || x.c.id === ui.vCli);
+  const clientesCon = [...new Map([...V.venc, ...V.mes, ...V.prox].map((x) => [x.c.id, x.c])).values()].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  const porCli = {}; for (const x of lista) (porCli[x.c.id] = porCli[x.c.id] || { c: x.c, n: 0 }).n++;
+  const pill = (x) => x.d < 0 ? `<span class="pill bad">Vencida ${esc(x.e.recProx)}</span>` : x.d === 0 ? `<span class="pill warn">Vence ${esc(x.e.recProx)}</span>` : `<span class="pill new">Vence ${esc(x.e.recProx)}</span>`;
+  return `<section class="sec" id="secVenc"><div class="card2"><div class="hd"><div class="sech" style="flex:1"><div class="t"><span class="ic a">${ICON.wrench}</span><h2>Vencimientos de recarga</h2><span class="sub" style="margin:0">de todos los proyectos · ${esc(MESES[new Date().getMonth()])} ${new Date().getFullYear()}</span></div></div>
+      <div class="inline"><select class="sm" id="vCli" aria-label="Cliente"><option value="">Todos los clientes</option>${clientesCon.map((c) => `<option value="${c.id}" ${ui.vCli === c.id ? 'selected' : ''}>${esc(c.nombre)}</option>`).join('')}</select>
+      <button class="btn sm xl" data-act="xlsxVenc" ${lista.length ? '' : 'disabled style="opacity:.5"'}>⬇ Excel</button></div></div>
+    <div class="vtabs">${V_TABS.map(([k, l]) => `<button class="vtab ${ui.vTab === k ? 'on' : ''} ${k}" data-act="vTab" data-id="${k}">${l}<span>${V[k].filter((x) => !ui.vCli || x.c.id === ui.vCli).length}</span></button>`).join('')}</div>
+    ${lista.length && !ui.vCli && Object.keys(porCli).length > 1 ? `<div class="vcli">${Object.values(porCli).map((p) => `<button class="tg" data-act="vCliSel" data-id="${p.c.id}">${esc(p.c.nombre)} <b>${p.n}</b></button>`).join('')}</div>` : ''}
+    <div class="tbl" style="max-height:440px;overflow-y:auto"><table><thead><tr><th>Cliente</th><th>N°</th><th>Zona · Área</th><th>Extintor</th><th>Serie</th><th>Última recarga</th><th>Próxima recarga</th></tr></thead><tbody>
+      ${lista.map((x) => `<tr><td><div class="pn">${logoProy(x.c)}<div><b>${esc(x.c.nombre)}</b><small>${esc(x.c.lugar && x.c.lugar !== x.c.nombre ? x.c.lugar : '')}</small></div></div></td><td><b>${esc(x.e.n)}</b></td><td>${esc(zonaCorta(x.e.zona))}<small style="display:block;color:var(--mut)">${esc(x.e.area)}</small></td><td>${esc([x.e.marca, x.e.tipo, x.e.capacidad].filter(Boolean).join(' · '))}</td><td>${esc(x.e.serie || '—')}</td><td>${esc(x.e.recAnt || '—')}</td><td>${pill(x)}</td></tr>`).join('')
+        || `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--mut)">${cargando ? 'Cargando extintores…' : ui.vTab === 'venc' ? 'No hay extintores con la recarga vencida.' : ui.vTab === 'mes' ? 'Ningún extintor vence este mes.' : 'Ningún extintor vence el próximo mes.'}<br><small>La fecha sale de la "próxima recarga" que anotan los técnicos en cada extintor.</small></td></tr>`}
+    </tbody></table></div></div></section>`;
+}
+async function exportVencimientos() {
+  const V = vencimientos(); const lista = V[ui.vTab].filter((x) => !ui.vCli || x.c.id === ui.vCli); if (!lista.length) return;
+  const titulo = (V_TABS.find((t) => t[0] === ui.vTab) || [, ''])[1];
+  const wb = new ExcelJS.Workbook(); const ws = wb.addWorksheet('Vencimientos', { views: [{ state: 'frozen', ySplit: 6, showGridLines: false }] });
+  const cols = [['Cliente', 26], ['Lugar', 18], ['N°', 6], ['Zona', 24], ['Área', 32], ['Marca', 12], ['Tipo', 8], ['Capacidad', 10], ['Serie', 14], ['N° extintor', 11], ['Última recarga', 13], ['Próxima recarga', 14], ['Estado', 17]];
+  ws.columns = cols.map(([, w]) => ({ width: w }));
+  ws.addImage(wb.addImage({ base64: LOGO_B64, extension: 'png' }), { tl: { col: 0.15, row: 0.2 }, ext: { width: 150, height: 58 } });
+  ws.mergeCells('C2:M2'); ws.getCell('C2').value = 'RECARGA DE EXTINTORES · ' + titulo.toUpperCase(); ws.getCell('C2').font = { bold: true, size: 15, color: { argb: 'FFC90012' } };
+  ws.mergeCells('C3:M3'); ws.getCell('C3').value = `${ui.vCli ? cliente(ui.vCli).nombre + ' · ' : 'Todos los clientes · '}${MESES[new Date().getMonth()]} ${new Date().getFullYear()} · ${lista.length} extintores`; ws.getCell('C3').font = { size: 11, color: { argb: 'FF555555' } };
+  const hr = ws.getRow(6); cols.forEach(([t], i) => { const c = hr.getCell(i + 1); c.value = t; c.font = { bold: true, color: { argb: 'FFFFFFFF' } }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC90012' } }; c.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }; }); hr.height = 24;
+  const brd = { style: 'thin', color: { argb: 'FFDDDDDD' } };
+  lista.forEach((x, i) => { const e = x.e; const r = ws.getRow(7 + i);
+    [x.c.nombre, x.c.lugar || '', e.n, e.zona || '', e.area || '', e.marca || '', String(e.tipo || '').replace(/₂/g, '2'), e.capacidad || '', e.serie || '', e.numero || '', e.recAnt || '', e.recProx || '', x.d < 0 ? 'Vencida' : x.d === 0 ? 'Vence este mes' : 'Próximo mes']
+      .forEach((v, j) => { const c = r.getCell(j + 1); c.value = v; c.border = { top: brd, bottom: brd, left: brd, right: brd }; c.alignment = { vertical: 'middle', wrapText: j === 4 || j === 3, horizontal: [2, 6, 7, 10, 11, 12].includes(j) ? 'center' : 'left' }; if (i % 2) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F8F8' } }; });
+    const st = r.getCell(13); st.font = { bold: true, color: { argb: x.d < 0 ? 'FFC90012' : x.d === 0 ? 'FF8A4A00' : 'FF1A56C4' } }; });
+  ws.autoFilter = { from: 'A6', to: `M${6 + lista.length}` };
+  ws.pageSetup = { paperSize: 1, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: '6:6', horizontalCentered: true };
+  const buf = await wb.xlsx.writeBuffer();
+  descargar(`Vencimientos_${titulo.replace(/\s+/g, '_')}_${ui.vCli ? String(cliente(ui.vCli).nombre).replace(/[^\wÁÉÍÓÚáéíóúñÑ]+/g, '_') + '_' : ''}${hoyISO()}.xlsx`, new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+}
+
 function renderAHome() {
+  vigilarExtintores();
   const hoy = hoyISO();
   const tecOn = new Set(); S.activas.forEach((v) => Object.entries(v.tecnicos || {}).forEach(([u, t]) => { if (online(t.visto)) tecOn.add(u); }));
   const fallasHoy = S.mes.filter((v) => v.fecha === hoy).reduce((a, v) => a + ((v.resumen && v.resumen.bad) || 0), 0);
@@ -642,11 +752,13 @@ function renderAHome() {
       ${kpiCard('users', 'b', 'Técnicos en campo', tecOn.size, 'conectados ahora')}
       ${kpiCard('folder', 'v', 'Proyectos este mes', nMes, `${extHoy} extintores revisados hoy`)}
       ${kpiCard('alert', 'r', 'Fallas encontradas hoy', fallasHoy, fallasHoy ? 'requieren atención' : 'sin novedades', '', fallasHoy ? '#C90012' : '')}
+      ${(() => { const V = vencimientos(); return `<div class="kclick" data-act="verVenc">${kpiCard('wrench', 'a', 'Recargas este mes', V.mes.length, V.venc.length ? `<span style="color:var(--red-ink);font-weight:600">+ ${V.venc.length} ya vencidas</span> · ver lista →` : 'ver lista →', '', V.mes.length || V.venc.length ? '#B25E00' : '')}</div>`; })()}
     </div>
     ${!S.clientes.length ? `<div class="box"><h2>Empecemos</h2><p class="sub" style="margin:0">Cargue Decameron Salinitas con sus ${DECAMERON.extintores.length} extintores de la hoja 2, o cree un proyecto nuevo.</p><div class="inline"><button class="btn pri" data-act="cargarDecameron">Cargar Decameron Salinitas</button><button class="btn" data-act="go" data-h="#/nuevo">Crear otro proyecto</button></div></div>` : ''}
     ${fij.length ? `<section class="sec">${secH('pinS', 'r', 'Fijados', fij.length, 'clientes de visita frecuente, siempre arriba')}<div class="gridP">${fij.map(card).join('')}</div></section>` : ''}
     <section class="sec">${secH('cal', 'b', `Este mes · ${MESES[new Date().getMonth()]}`, mes.length, 'el 1.º del próximo mes pasan al archivo')}
       <div class="gridP">${mes.map(card).join('')}<div class="pc add" data-act="go" data-h="#/nuevo" role="link" tabindex="0"><span class="lg">+</span>Nuevo proyecto</div></div></section>
+    ${S.clientes.length ? seccionVencimientos() : ''}
     <section class="sec"><div class="card2"><div class="hd">${secH('arch', 'n', 'Archivo', arch.length, 'proyectos anteriores').replace('class="sech"', 'class="sech" style="flex:1"')}
         <div class="inline"><label class="searchA">${ICON.search}<input id="aq" placeholder="Buscar cliente o lugar" value="${esc(ui.hq)}"></label>
         <select class="sm" id="ames" aria-label="Mes"><option value="">Todos los meses</option>${meses.map((m) => `<option value="${m}" ${ui.hmes === m ? 'selected' : ''}>${MESES[+m.slice(5) - 1]} ${m.slice(0, 4)}</option>`).join('')}</select></div></div>
@@ -658,6 +770,7 @@ function renderAHome() {
   </main></div>`;
   const aq = $('aq'); aq.oninput = () => { ui.hq = aq.value; const p = aq.selectionStart; renderAHome(); const n = $('aq'); n.focus(); n.setSelectionRange(p, p); };
   $('ames').onchange = (e) => { ui.hmes = e.target.value; renderAHome(); };
+  if ($('vCli')) $('vCli').onchange = (e) => { ui.vCli = e.target.value; renderAHome(); };
   $('aret').onchange = async (e) => { const m = +e.target.value; if (!(await ask('Cambiar plazo', `Las visitas terminadas con más de ${m} meses se borrarán. Descargue antes los reportes que quiera conservar.`, 'Cambiar'))) { e.target.value = S.config.retencionMeses || 6; return; } Cloud.saveConfig({ retencionMeses: m }).then(limpiarViejas).catch(cloudError); };
 }
 async function limpiarViejas() {
@@ -716,6 +829,9 @@ function renderACliente(cid) {
     <div class="side">
       <div class="card2 side2">${hd('users', 'b', v.estado === 'en_curso' ? 'Técnicos en campo' : 'Técnicos de la visita', tecs.length)}<div class="bd" style="padding-top:4px;padding-bottom:6px">${tecs.map(([u, t]) => `<div class="tcard">${avatar(t.nombre, u).replace('</span>', online(t.visto) ? '<i class="on"></i></span>' : '</span>')}<div class="i"><b>${esc(t.nombre)}</b><small>${online(t.visto) ? '<span style="color:var(--ok);font-weight:600">● En línea</span>' : t.visto ? 'Visto ' + hace(t.visto) : 'Desconectado'}</small></div><div class="n"><b>${porTec[u] || 0}</b><small>revisados</small></div></div>`).join('') || '<p class="muted" style="margin:10px 0">Nadie ha entrado todavía.</p>'}</div></div>
       <div class="card2 side2">${hd('live', 'g', v.estado === 'en_curso' ? 'Actividad en vivo' : 'Actividad', null)}<div class="bd"><div class="tl">${feed.map((x) => { const e = ext.find((y) => y.id === x.eid); const s = estado(x); return `<div class="it"><span class="dt ic ${s === 'bad' ? 'r' : 'g'}">${s === 'bad' ? ICON.alert : ICON.check}</span><div class="tx"><b>${esc((x.by || '').split(' ')[0])}</b> ${s === 'bad' ? 'marcó con falla' : 'revisó'} <b>#${esc(e ? e.n : '')}</b> ${esc(e ? e.area : '')}${s === 'bad' ? ' · ' + esc(fallasDe(x).join(', ')) : ''}<small>${new Date(x.t).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })} · ${hace(x.t)}</small></div></div>`; }).join('') || '<span class="muted">Sin revisiones todavía.</span>'}</div></div></div>
+      <div class="card2 side2">${hd('check', 'v', 'Firmas', null)}<div class="bd"><div class="firmasRO">
+        <div><span class="lbl">Técnico SOS FIRE</span>${F(v).tec ? `<img src="${F(v).tec}" alt="Firma técnico">` : '<div class="nofirma">Sin firma todavía</div>'}<b>${esc((F(v).tecNombre != null ? F(v).tecNombre : tecnicosDe(v)) || '—')}</b></div>
+        <div><span class="lbl">${esc(encLabel(c))}</span>${F(v).enc ? `<img src="${F(v).enc}" alt="Firma encargado">` : '<div class="nofirma">Sin firma todavía</div>'}<b>${esc(F(v).encNombre || '—')}</b></div></div></div></div>
     </div></div>` : `<div class="emptyc">Este proyecto no tiene visitas todavía. Pulse <b>Iniciar visita de hoy</b> para empezar.</div>`}
     <div class="cols"><div class="main"><div class="card2">${hd('clock', 'v', 'Historial de visitas', S.aVisitas.length)}<div class="tbl"><table><thead><tr><th>Fecha</th><th>Técnicos</th><th>Resultado</th><th>Estado</th><th style="text-align:right;padding-right:18px">Reporte</th></tr></thead><tbody>
       ${S.aVisitas.map((x) => `<tr${x.id === S.aVid ? ' style="background:#FAFAFB"' : ''}><td><b>${fmtFecha(x.fecha)}</b></td><td><div class="stack">${Object.entries(x.tecnicos || {}).slice(0, 4).map(([u, t]) => avatar(t.nombre, u)).join('')}</div></td><td>${x.resumen ? `<b>${x.resumen.done}/${x.resumen.total}</b> revisados${x.resumen.bad ? ` · <span style="color:var(--red-ink);font-weight:600">${x.resumen.bad} con falla</span>` : ''}` : '—'}</td><td>${x.estado === 'en_curso' ? '<span class="stt live"><i></i>En curso</span>' : '<span class="stt done"><i></i>Terminada</span>'}</td><td style="text-align:right;padding-right:18px;white-space:nowrap"><button class="btn sm" data-act="selV" data-id="${x.id}">Ver</button> <button class="btn sm" data-act="xlsxV" data-id="${x.id}" style="color:#107C41">Excel</button> <button class="btn sm" data-act="pdfV" data-id="${x.id}" style="color:var(--red)">PDF</button></td></tr>`).join('') || '<tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Sin visitas.</td></tr>'}
@@ -800,6 +916,21 @@ async function exportXlsx({ c, v, ext, rev }) {
     put('AF', r.obs || '');
     rn++;
   }
+  // Firmas al pie, como en el formato de detectores
+  const f = F(v); const r1 = rn + 1, r2 = rn + 2, r3 = rn + 3;
+  const thin = { style: 'thin', color: { argb: 'FF7F7F7F' } };
+  // La plantilla está a escala grande (filas de ~194 pt, letra 72): el bloque de firmas se escala igual
+  const k = Math.max(1, (h || 27) / 27);
+  const bloque = (c1, c2, titulo, nombre, firma, etiqueta) => {
+    ws.mergeCells(`${c1}${r1}:${c2}${r1}`); const t = ws.getCell(`${c1}${r1}`); t.value = `${titulo}: ${nombre || ''}`; t.font = { bold: true, size: Math.round(10 * k) }; t.alignment = { vertical: 'middle' };
+    ws.mergeCells(`${c1}${r2}:${c2}${r2}`); ws.getCell(`${c1}${r2}`).border = { bottom: { style: 'medium', color: { argb: 'FF7F7F7F' } } };
+    ws.mergeCells(`${c1}${r3}:${c2}${r3}`); const l = ws.getCell(`${c1}${r3}`); l.value = etiqueta; l.font = { size: Math.round(9 * k), color: { argb: 'FF555555' } }; l.alignment = { horizontal: 'center', vertical: 'top' };
+    if (firma) { const col = ws.getColumn(c1).number - 1; ws.addImage(wb.addImage({ base64: firma.split(',')[1], extension: 'png' }), { tl: { col: col + 0.4, row: r2 - 1 + 0.08 }, ext: { width: Math.round(230 * k), height: Math.round(76 * k) } }); }
+  };
+  ws.getRow(r1).height = Math.round(22 * k); ws.getRow(r2).height = Math.round(64 * k); ws.getRow(r3).height = Math.round(18 * k);
+  bloque('E', 'L', 'Técnico SOS FIRE', f.tecNombre != null ? f.tecNombre : tecnicosDe(v), f.tec, 'Firma técnico');
+  bloque('T', 'AE', encLabel(c), f.encNombre, f.enc, 'Firma ' + encLabel(c).replace('Encargado', 'encargado'));
+  rn = r3 + 1;
   ws.pageSetup = { ...ws.pageSetup, paperSize: 1, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: '5:8', printArea: `B1:AI${Math.max(9, rn - 1)}`, horizontalCentered: true };
   ws.headerFooter = { oddFooter: `&L&8${c.nombre} · ${fmtFecha(v.fecha)}&R&8Página &P de &N` };
   const buf = await wb.xlsx.writeBuffer();
@@ -847,6 +978,18 @@ async function exportPdf({ c, v, ext, rev }) {
       const bad = k === 'recProx' ? ['vencida', 'pronto'].includes(venc(d.cell.raw)) : r.c && r.c[k] && r.c[k] !== CK[k].good;
       if (bad) { d.cell.styles.textColor = RED; d.cell.styles.fontStyle = 'bold'; d.cell.styles.fillColor = [253, 236, 236]; } },
     willDrawPage: (d) => { if (d.pageNumber > 1) head(); } });
+  // Firmas al final del reporte
+  const f = F(v); let y = doc.lastAutoTable.finalY + 10;
+  if (y + 46 > H - 12) { doc.addPage(); head(); y = 32; }
+  const bw = (W - 2 * M - 20) / 2;
+  [[M, 'Técnico SOS FIRE', f.tecNombre != null ? f.tecNombre : tecnicosDe(v), f.tec], [M + bw + 20, encLabel(c), f.encNombre, f.enc]].forEach(([x, titulo, nombre, firma]) => {
+    doc.setDrawColor(200); doc.setLineWidth(0.3); doc.roundedRect(x, y, bw, 44, 2, 2);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...GRAY); doc.text(('Firma ' + titulo).toUpperCase(), x + 4, y + 6);
+    if (firma) { try { doc.addImage(firma, 'PNG', x + bw / 2 - 30, y + 8, 60, 20); } catch (e) {} } else { doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(170); doc.text('Sin firma', x + bw / 2, y + 20, { align: 'center' }); }
+    doc.setDrawColor(120); doc.line(x + 12, y + 31, x + bw - 12, y + 31);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(40); doc.text(String(nombre || '—'), x + bw / 2, y + 37, { align: 'center' });
+    doc.setFontSize(7.5); doc.setTextColor(120); doc.text(titulo, x + bw / 2, y + 41.5, { align: 'center' });
+  });
   const n = doc.getNumberOfPages();
   for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(130); doc.text(`SOS FIRE · ${c.nombre} · ${fmtFecha(v.fecha)}`, M, H - 5); doc.text(`Página ${i} de ${n}`, W - M, H - 5, { align: 'right' }); }
   descargar(nombreArchivo(c, v, 'pdf'), doc.output('blob'));
@@ -878,7 +1021,7 @@ const ACT = {
   go: (el) => go(el.dataset.h),
   instalar: () => instalar(),
   noInstalar: () => { try { localStorage.setItem('ext_noInstalar', '1'); } catch (e) {} redraw(); },
-  salir: async () => { if (await ask('Cerrar sesión', '¿Salir de la app en este dispositivo?', 'Salir')) { salirVisita(); stopAll('list'); await Cloud.logout(); } },
+  salir: async () => { if (await ask('Cerrar sesión', '¿Salir de la app en este dispositivo?', 'Salir')) { salirVisita(); stopAll('list'); for (const k of Object.keys(UX)) { UX[k](); delete UX[k]; } S.allExt = {}; await Cloud.logout(); } },
   cliente: (el) => (location.hash === '#/nuevo' && !el.closest('.sugg') ? null : entrarCliente(el.dataset.id)),
   nvF: (el) => { NV.frecuencia = el.dataset.v; renderNuevo(); },
   nvC: (el) => { NV.carga = el.dataset.v; if (NV.carga === 'excel') $('fileX').click(); else { NV.excel = null; renderNuevo(); } },
@@ -898,7 +1041,11 @@ const ACT = {
   },
   recargaHoy: () => { ed.recAnt = mesActual(); ed.recProx = sumarMeses(ed.recAnt, 12); const o = ed.obs.split(';').map((x) => x.trim()).filter(Boolean); if (!o.includes('Recargado')) o.push('Recargado'); ed.obs = o.join('; '); pintarFicha(); },
   qobs: (el) => { let p = ed.obs.split(';').map((x) => x.trim()).filter(Boolean); const q = el.dataset.q; p = p.includes(q) ? p.filter((x) => x !== q) : [...p, q]; ed.obs = p.join('; '); pintarFicha(); },
-  terminar: async () => { if (!(await ask('Terminar visita', 'La visita queda cerrada y pasa al historial. Si falta algo, el administrador puede reabrirla.', 'Terminar'))) return; await Cloud.updateVisita(S.vid, { estado: 'terminada', cerrada: Date.now(), resumen: calcResumen(S.ext, S.rev), ultimaAct: { texto: `${yo().split(' ')[0]} terminó la visita`, t: Date.now(), by: yo() } }).catch(cloudError); toast('Visita terminada'); go('#/'); },
+  terminar: async () => {
+    const f = F(S.visita); const falta = [!f.tec && 'la firma del técnico', !f.enc && 'la firma del encargado'].filter(Boolean);
+    if (falta.length && !(await ask('Faltan firmas', `Falta ${falta.join(' y ')}. Puede firmar abajo en "Cierre de visita". ¿Terminar la visita sin ${falta.length > 1 ? 'ellas' : 'ella'}?`, 'Terminar sin firmas'))) { const cv = $(!f.tec ? 'sigTec' : 'sigEnc'); if (cv) cv.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+    if (!falta.length && !(await ask('Terminar visita', 'La visita queda cerrada y pasa al historial con las firmas. Si falta algo, el administrador puede reabrirla.', 'Terminar'))) return;
+    if (f.tecNombre == null) Cloud.updateVisita(S.vid, { 'firmas.tecNombre': tecnicosDe(S.visita) || yo() }).catch(cloudError); await Cloud.updateVisita(S.vid, { estado: 'terminada', cerrada: Date.now(), resumen: calcResumen(S.ext, S.rev), ultimaAct: { texto: `${yo().split(' ')[0]} terminó la visita`, t: Date.now(), by: yo() } }).catch(cloudError); toast('Visita terminada'); go('#/'); },
   xlsx: () => run(async () => exportXlsx(await datosVisita(S.vid))),
   pdf: () => run(async () => exportPdf(await datosVisita(S.vid))),
   // administrador
@@ -910,6 +1057,11 @@ const ACT = {
   pdfV: (el) => run(async () => exportPdf(await datosVisita(el.dataset.id))),
   nuevaVisitaA: () => { const c = cliente(S.aCid); const vid = nuevaVisita(c); verVisitaAdm(vid); toast('Visita de hoy iniciada'); },
   terminarA: async () => { if (!(await ask('Terminar visita', 'La visita pasa al historial.', 'Terminar'))) return; Cloud.updateVisita(S.aVid, { estado: 'terminada', cerrada: Date.now(), resumen: calcResumen(S.aExt, S.aRev) }).catch(cloudError); },
+  sigClr: (el) => { const k = el.dataset.id; S.visita.firmas = { ...F(S.visita), [k]: '' }; Cloud.updateVisita(S.vid, { [`firmas.${k}`]: '' }).catch(cloudError); route(); },
+  vTab: (el) => { ui.vTab = el.dataset.id; renderAHome(); },
+  vCliSel: (el) => { ui.vCli = el.dataset.id; renderAHome(); },
+  verVenc: () => { const v = vencimientos(); if (!v.mes.length && v.venc.length) ui.vTab = 'venc'; renderAHome(); const s = $('secVenc'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
+  xlsxVenc: () => run(exportVencimientos),
   reabrirA: () => Cloud.updateVisita(S.aVid, { estado: 'en_curso' }).catch(cloudError),
   guardarCliente: () => { const p = { nombre: $('cN').value.trim(), lugar: $('cL').value.trim(), frecuencia: $('cF').value }; if ($('cD')) p.dia = +$('cD').value; else if (p.frecuencia === 'semanal') p.dia = new Date().getDay(); if (!p.nombre) return toast('Escriba el nombre del cliente'); Cloud.updateCliente(S.aCid, p).then(() => toast('Proyecto actualizado')).catch(cloudError); },
   cargarDecameron: () => run(async () => {
