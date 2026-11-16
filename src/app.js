@@ -996,26 +996,30 @@ function renderACliente(cid) {
 }
 
 // ----- Técnicos -----
+const nuevaClave = () => 'SOS-' + Math.floor(1000 + Math.random() * 9000);
+let claveTec = nuevaClave(); const formTec = { tN: '', tU: '', tR: 'tecnico' }; let htmlTec = '';
 function renderATecnicos() {
   const enVisita = (u) => S.activas.find((v) => v.tecnicos && v.tecnicos[u] && online(v.tecnicos[u].visto));
   const visMes = (u) => S.mes.filter((v) => v.tecnicos && v.tecnicos[u]).length;
   const us = S.usuarios.slice().sort((a, b) => (b.activo - a.activo) || a.nombre.localeCompare(b.nombre));
-  root.innerHTML = `<div class="adm">${headAdm('t')}<main class="am"><div class="cols">
+  const html = `<div class="adm">${headAdm('t')}<main class="am"><div class="cols">
     <section class="main"><div><h1>Técnicos</h1><div class="sub">Se registran una sola vez. Con su usuario pueden entrar a cualquier proyecto y crear proyectos nuevos.</div></div>
       <div class="tbl"><table><thead><tr><th>Persona</th><th>Ahora</th><th>Visitas este mes</th><th>Rol</th><th style="text-align:right;padding-right:18px">Acceso</th></tr></thead><tbody>
       ${us.map((u) => { const v = enVisita(u.id); return `<tr><td><div class="trow">${avatar(u.nombre, u.id)}<div class="i"><b>${esc(u.nombre)}</b><span>${esc(u.usuario || u.email || '')}</span></div></div></td>
         <td>${v ? `<span class="pill ok">${esc(v.cliente)}</span>` : '<span class="muted">—</span>'}</td><td><b>${visMes(u.id)}</b></td><td>${u.rol === 'admin' ? 'Administrador' : 'Técnico'}</td>
-        <td style="text-align:right;padding-right:18px">${u.id === Cloud.uid() ? '<span class="muted">Usted</span>' : `<button class="btn sm ${u.activo ? '' : 'pri'}" data-act="acceso" data-id="${u.id}">${u.activo ? 'Quitar acceso' : 'Dar acceso'}</button>`}</td></tr>`; }).join('') || '<tr><td colspan="5" class="muted">Todavía no hay técnicos.</td></tr>'}
+        <td style="text-align:right;padding-right:18px">${u.id === Cloud.uid() ? '<span class="muted">Usted</span>' : `<button class="btn sm ${u.activo ? '' : 'pri'}" data-act="acceso" data-id="${u.id}">${u.activo ? 'Quitar acceso' : 'Dar acceso'}</button> <button class="btn sm" data-act="borrarUsu" data-id="${u.id}" style="color:#C90012">Eliminar</button>`}</td></tr>`; }).join('') || '<tr><td colspan="5" class="muted">Todavía no hay técnicos.</td></tr>'}
       </tbody></table></div></section>
-    <section class="side"><div class="box"><h2>Agregar técnico</h2>
-      <label class="field">Nombre completo<input id="tN" placeholder="Jorge Ramírez"></label>
-      <label class="field">Usuario (para entrar)<input id="tU" placeholder="jorge" autocapitalize="off"></label>
-      <label class="field">Contraseña inicial<input id="tP" value="SOS-${Math.floor(1000 + Math.random() * 9000)}"></label>
-      <label class="field">Rol<select id="tR"><option value="tecnico">Técnico</option><option value="admin">Administrador</option></select></label>
+    <section class="side"><div class="box nore"><h2>Agregar técnico</h2>
+      <label class="field">Nombre completo<input id="tN" placeholder="Jorge Ramírez" value="${esc(formTec.tN)}"></label>
+      <label class="field">Usuario (para entrar)<input id="tU" placeholder="jorge" autocapitalize="off" value="${esc(formTec.tU)}"></label>
+      <label class="field">Contraseña inicial<input id="tP" value="${esc(claveTec)}"></label>
+      <label class="field">Rol<select id="tR"><option value="tecnico">Técnico</option><option value="admin" ${formTec.tR === 'admin' ? 'selected' : ''}>Administrador</option></select></label>
       <span class="muted" style="font-size:12.5px">La app le pide cambiar la contraseña la primera vez que entra.</span>
       <button class="btn pri" data-act="crearTec">Crear</button><div class="err" id="tErr"></div>
       <div class="muted" style="border-top:1px solid var(--line);padding-top:10px;font-size:13px">Si alguien deja la empresa, se le quita el acceso con un clic. Sus revisiones quedan en los reportes.</div>
     </div></section></div></main></div>`;
+  if (html !== htmlTec || !document.getElementById('tN')) { htmlTec = html; root.innerHTML = html; }
+  for (const id of ['tN', 'tU', 'tP', 'tR']) { const el = $(id); if (el) el.oninput = el.onchange = () => { if (id === 'tP') claveTec = el.value; else formTec[id] = el.value; }; }
 }
 
 /* ======================= 7) Excel (hoja 2) y PDF ======================= */
@@ -1288,13 +1292,21 @@ const ACT = {
     await Cloud.addExtintores(cid, d.extintores.map((e) => ({ ...e, recAnt: '', recProx: '', ph: '' })));
     toast(`${d.cliente} cargado con ${d.extintores.length} extintores`);
   }),
+  borrarUsu: async (el) => {
+    const u = S.usuarios.find((x) => x.id === el.dataset.id); if (!u) return;
+    if (u.id === Cloud.uid()) return toast('No puede eliminarse a sí mismo');
+    if (ADMIN_EMAILS.map((x) => x.toLowerCase()).includes(String(u.email || '').toLowerCase())) return toast('Ese administrador está fijado en la configuración de la app; para quitarlo cámbielo en Render (ADMIN_EMAILS)');
+    if (u.rol === 'admin' && u.activo && S.usuarios.filter((x) => x.rol === 'admin' && x.activo).length <= 1) return toast('Debe quedar al menos un administrador');
+    if (!(await ask(`Eliminar a ${u.nombre}`, `${u.nombre} (${u.usuario || u.email || ''}) dejará de aparecer y ya no podrá entrar. Sus revisiones quedan en los reportes. No se puede deshacer.`, 'Eliminar'))) return;
+    try { await Cloud.borrarUsuario(u.id); toast('Usuario eliminado'); } catch (e) { cloudError(e); }
+  },
   acceso: async (el) => { const u = S.usuarios.find((x) => x.id === el.dataset.id); if (u.activo && !(await ask('Quitar acceso', `${u.nombre} ya no podrá entrar a la app. Sus revisiones quedan en los reportes.`, 'Quitar acceso'))) return; Cloud.setUsuario(u.id, { activo: !u.activo }).catch(cloudError); },
   crearTec: async () => {
     const nombre = $('tN').value.trim(), usuario = $('tU').value.trim(), clave = $('tP').value, rol = $('tR').value;
     if (!nombre || !usuario) { $('tErr').textContent = 'Escriba nombre y usuario.'; return; }
     if (clave.length < 6) { $('tErr').textContent = 'La contraseña debe tener al menos 6 caracteres.'; return; }
     $('tErr').textContent = '';
-    try { await Cloud.crearTecnico({ nombre, usuario, clave, rol }); await ask('Listo', `${nombre} ya puede entrar con el usuario “${usuario}” y la contraseña “${clave}”. La app le pedirá cambiarla.`, null); renderATecnicos(); }
+    try { await Cloud.crearTecnico({ nombre, usuario, clave, rol }); formTec.tN = ''; formTec.tU = ''; formTec.tR = 'tecnico'; claveTec = nuevaClave(); htmlTec = ''; await ask('Listo', `${nombre} ya puede entrar con el usuario “${usuario}” y la contraseña “${clave}”. La app le pedirá cambiarla.`, null); renderATecnicos(); }
     catch (e) { $('tErr').textContent = /email-already/.test(e.code || '') ? 'Ese usuario ya existe.' : /network/.test(e.code || '') ? 'Sin conexión. Intente de nuevo.' : 'No se pudo crear: ' + (e.code || e.message); }
   },
 };

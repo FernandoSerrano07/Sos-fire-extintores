@@ -49,6 +49,7 @@ const email = () => auth.currentUser && auth.currentUser.email;
 // ---------- Usuarios ----------
 const watchUsuario = (id, cb, err) => onSnapshot(doc(db, 'ext_usuarios', id), (s) => cb(s.exists() ? { id: s.id, ...s.data() } : null), err);
 const watchUsuarios = (cb, err) => onSnapshot(collection(db, 'ext_usuarios'), (qs) => cb(qs.docs.map((d) => ({ id: d.id, ...d.data() }))), err);
+const borrarUsuario = (id) => deleteDoc(doc(db, 'ext_usuarios', id));
 const setUsuario = (id, data) => setDoc(doc(db, 'ext_usuarios', id), data, { merge: true });
 
 // Crea la cuenta del técnico sin cerrar la sesión del administrador (usa una segunda conexión)
@@ -132,7 +133,7 @@ const saveConfig = (c) => setDoc(doc(db, 'ext_config', 'general'), c, { merge: t
 
 window.Cloud = {
   init, onUser, login, logout, cambiarClave, uid, email, emailDe,
-  watchUsuario, watchUsuarios, setUsuario, crearTecnico,
+  watchUsuario, watchUsuarios, setUsuario, borrarUsuario, crearTecnico,
   watchClientes, crearCliente, updateCliente, watchExtintores, nuevoIdExtintor, saveExtintor, addExtintores,
   watchVisitasCliente, watchVisitasDesde, watchVisitasActivas, todasLasVisitas, crearVisita, updateVisita, watchVisita,
   watchRevisiones, revisiones, saveRevision, presente, salir, borrarVisita, borrarCliente,
