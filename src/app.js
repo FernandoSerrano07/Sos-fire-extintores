@@ -153,6 +153,7 @@ const ui = { q: '', zona: '', filtro: 'all', limit: 80, hq: '', hmes: '', vTab: 
 const UX = {}; // suscripciones a extintores por cliente (panel de vencimientos)
 
 let redrawT = null;
+let perfilIntentado = null;
 let sigBusy = false;
 // No se redibuja mientras alguien firma o escribe su nombre en el cierre; se hace al terminar
 const bloqueado = () => sigBusy || !!(document.activeElement && document.activeElement.closest && document.activeElement.closest('.nore'));
@@ -1356,7 +1357,12 @@ function arrancar() {
     gate(`<img src="${LOGO}" alt="SOS FIRE"><p>Entrando…</p>`);
     const adminCorreo = ADMIN_EMAILS.map((x) => x.toLowerCase()).includes((u.email || '').toLowerCase());
     unMe = Cloud.watchUsuario(u.uid, async (p) => {
-      if (!p && adminCorreo) { await Cloud.setUsuario(u.uid, { nombre: 'Administrador', usuario: u.email, email: u.email, rol: 'admin', activo: true, debeCambiar: false, creado: Date.now() }).catch(cloudError); return; }
+      if (!p && adminCorreo) {
+        // Se intenta una sola vez: si las reglas de Firebase no incluyen este correo, la escritura se rechaza y antes se repetía sin parar (pantalla parpadeando).
+        if (perfilIntentado === u.uid) { gate(`<img src="${LOGO}" alt="SOS FIRE"><h2>Falta autorizar su correo</h2><p>El correo <b>${esc(u.email)}</b> está en ADMIN_EMAILS de Render, pero las <b>reglas de Firestore</b> todavía tienen otro correo. En Firebase → Firestore → Reglas, cambie el correo de administrador por este y pulse <b>Publicar</b>. Luego recargue.</p><button class="btn" data-act="salir">Salir</button>`); return; }
+        perfilIntentado = u.uid;
+        await Cloud.setUsuario(u.uid, { nombre: 'Administrador', usuario: u.email, email: u.email, rol: 'admin', activo: true, debeCambiar: false, creado: Date.now() }).catch((e) => { cloudError(e); }); return;
+      }
       if (!p) { gate(`<img src="${LOGO}" alt="SOS FIRE"><h2>Sin acceso</h2><p>Su usuario no está registrado en la app de extintores. Pida al administrador que lo agregue.</p><button class="btn" data-act="salir">Salir</button>`); return; }
       if (!p.activo && !adminCorreo) { gate(`<img src="${LOGO}" alt="SOS FIRE"><h2>Acceso desactivado</h2><p>El administrador quitó su acceso. Si es un error, comuníquese con él.</p><button class="btn" data-act="salir">Salir</button>`); return; }
       if (p.debeCambiar) { pantallaClave(); return; }
