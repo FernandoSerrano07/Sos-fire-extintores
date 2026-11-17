@@ -82,8 +82,20 @@ const CRIT = [
   { k: 'boquilla', l: 'Boquilla', o: [['s', 'Sí'], ['n', 'No']], good: 's', col: ['X', 'Y'] },
   { k: 'etiqueta', l: 'Etiqueta', o: [['s', 'Sí'], ['n', 'No']], good: 's', col: ['Z', 'AA'] },
 ];
-const CK = Object.fromEntries(CRIT.map((c) => [c.k, c]));
-const optLabel = (k, v) => (CK[k].o.find((o) => o[0] === v) || [, k === 'presion' && (v === 'baja' || v === 'alta') ? 'Mala' : ''])[1];
+const CK = Object.fromEntries(CRIT.map((c) => [c.k, c])); // se completa con las revisiones propias de cada cliente
+// Qué revisiones lleva cada cliente (cada uno tiene su formato de reporte). Sin configurar = todas, como Decameron.
+const EXTRAS = [['recargas', 'Fechas de recarga'], ['ph', 'PH (prueba hidrostática)'], ['altura', 'Altura al tope']];
+const TODAS = CRIT.map((c) => c.k).concat(EXTRAS.map((x) => x[0]));
+const FMT_EXTRA = { recargas: ['recA', 'recP'], ph: ['ph'], altura: ['alt'] };
+const usa = (cid, k) => {
+  const c = S.clientes.find((x) => x.id === cid); if (!c) return true;
+  if (c.formato) return FMT_EXTRA[k] ? c.formato.items.some((i) => FMT_EXTRA[k].includes(i.t)) : c.formato.items.some((i) => i.t === 'chk' && i.k === k);
+  return !Array.isArray(c.criterios) || c.criterios.includes(k);
+};
+const critFmt = (it) => ({ k: it.k, l: it.l, o: it.o === 'sn' ? [['s', 'Sí'], ['n', 'No']] : [['b', 'Bueno'], ['m', 'Malo']], good: it.o === 'sn' ? 's' : 'b' });
+function registrarFormatos() { for (const c of S.clientes) if (c.formato) for (const it of c.formato.items) if (it.t === 'chk') CK[it.k] = critFmt(it); }
+const critDe = (cid) => { const c = S.clientes.find((x) => x.id === cid); return c && c.formato ? c.formato.items.filter((i) => i.t === 'chk').map(critFmt) : CRIT.filter((x) => usa(cid, x.k)); };
+const optLabel = (k, v) => ((CK[k] || { o: [] }).o.find((o) => o[0] === v) || [, k === 'presion' && (v === 'baja' || v === 'alta') ? 'Mala' : ''])[1];
 // Frases que el cliente ya usa en su hoja 2 (columna Observaciones)
 const QUICK = ['Cambiar manómetro', 'PH ficticia', 'Cambiar manguera', 'Se cambió manómetro', 'Manguera cristalizada', 'Tarjeta de control no visible', 'Despresurizado', 'Descargado en bodega', 'Se cambió cincho plástico', 'Retirado para MYRE', 'Se sometió a MYRE', 'Pendiente de MYRE', 'Se efectuó MYRE', 'Requiere recarga'];
 // Situación del extintor: cuando no se puede inspeccionar normalmente
@@ -108,13 +120,14 @@ function estado(rev) {
   if (rev.sit === 'noenc') return 'bad';
   if (rev.sit) return 'esp';
   if (!rev.c) return 'pend';
-  const vals = CRIT.map((c) => rev.c[c.k]);
+  const KS = rev.ck ? rev.ck.map((k) => CK[k]).filter(Boolean) : CRIT;
+  const vals = KS.map((c) => rev.c[c.k]);
   if (vals.every((v) => !v)) return 'pend';
-  if (CRIT.some((c) => rev.c[c.k] && !esBueno(c, rev.c[c.k]))) return 'bad';
+  if (Object.keys(rev.c).some((k) => CK[k] && rev.c[k] && !esBueno(CK[k], rev.c[k]))) return 'bad';
   if (vals.some((v) => !v)) return 'part';
   return 'ok';
 }
-const fallasDe = (rev) => (rev && rev.sit === 'noenc' ? ['No se encontró'] : []).concat(CRIT.filter((c) => rev && rev.c && rev.c[c.k] && !esBueno(c, rev.c[c.k])).map((c) => `${c.l.replace(' del manómetro', '').replace(' de uso', '')}: ${optLabel(c.k, rev.c[c.k])}`));
+const fallasDe = (rev) => (rev && rev.sit === 'noenc' ? ['No se encontró'] : []).concat(Object.values(CK).filter((c) => rev && rev.c && rev.c[c.k] && !esBueno(c, rev.c[c.k])).map((c) => `${c.l.replace(' del manómetro', '').replace(' de uso', '')}: ${optLabel(c.k, rev.c[c.k])}`));
 // Recarga "MM/AAAA": vencida, por vencer (este mes o el siguiente) o al día
 function venc(mmaaaa) {
   const m = String(mmaaaa || '').match(/^(\d{1,2})\/(\d{4})$/); if (!m) return null;
@@ -162,7 +175,7 @@ function cloudError(e) { console.error(e); if (e && e.code === 'permission-denie
 
 function iniciarDatos() {
   stopAll('list');
-  U.list.push(Cloud.watchClientes((l) => { S.clientes = l; redraw(); }, cloudError));
+  U.list.push(Cloud.watchClientes((l) => { S.clientes = l; registrarFormatos(); redraw(); }, cloudError));
   U.list.push(Cloud.watchVisitasActivas((l) => { S.activas = l; redraw(); }, cloudError));
   U.list.push(Cloud.watchVisitasDesde(inicioMes(), (l) => { S.mes = l; redraw(); }, cloudError));
   U.list.push(Cloud.watchConfig((c) => { S.config = c || {}; }, cloudError));
@@ -606,14 +619,14 @@ const extDe = (eid) => S.ext.find((e) => e.id === eid);
 function abrirFicha(eid) {
   const e = extDe(eid); if (!e) return; const r = S.rev[eid];
   ed = { eid, c: r && r.c ? { ...r.c } : {}, obs: r ? r.obs || '' : '', recAnt: (r && r.recAnt) || e.recAnt || '', recProx: (r && r.recProx) || e.recProx || '', ph: (r && r.ph) || e.ph || '', altura: (r && r.altura) || e.altura || '', sit: (r && r.sit) || '', soporte: sopDe(e, r), prevMalo: estado(r) === 'bad', aviso: '' };
-  if (!ed.c.presion && esCO2(e.tipo) && !ed.sit) { ed.c.presion = 'na'; ed.presionAuto = true; }
+  if (usa(S.cid, 'presion') && !ed.c.presion && esCO2(e.tipo) && !ed.sit) { ed.c.presion = 'na'; ed.presionAuto = true; }
   $('shN').textContent = '#' + (e.n ?? ''); $('shArea').textContent = e.area || '(sin área)'; $('shZona').textContent = e.zona || '';
   pintarFicha(); $('scrim').classList.add('on'); $('sheet').classList.add('on'); $('shBody').scrollTop = 0;
 }
 // ¿La ficha sigue como estaba al abrirla? (para no guardar revisiones vacías)
 function fichaVacia() {
   const e = extDe(ed.eid) || {}; const r = S.rev[ed.eid];
-  const sinCrit = CRIT.every((c) => !ed.c[c.k] || (c.k === 'presion' && ed.presionAuto && ed.c.presion === 'na'));
+  const sinCrit = critDe(S.cid).every((c) => !ed.c[c.k] || (c.k === 'presion' && ed.presionAuto && ed.c.presion === 'na'));
   return !ed.sit && sinCrit && !ed.obs.trim() && (ed.altura || '') === ((r && r.altura) || e.altura || '') && ed.soporte === sopDe(e, r) && !r;
 }
 function cerrarFicha() { ed = null; $('scrim').classList.remove('on'); $('sheet').classList.remove('on'); }
@@ -634,19 +647,19 @@ function pintarFicha() {
     <div class="seg sit">${SIT.map(([v, l]) => `<button data-act="sit" data-v="${v}" class="${ed.sit === v ? (v === '' ? 'g' : v === 'noenc' ? 'b' : 'w') : ''}">${l}</button>`).join('')}</div>
     ${ed.sit ? `<div class="editbar" style="margin-top:10px">${ed.sit === 'noenc' ? 'No se encontró en su lugar: queda como hallazgo. Anote dónde estaba o dónde puede estar.' : ed.sit === 'reserva' ? 'Está de reserva: no se revisa el estado, solo queda anotado.' : 'Fue retirado del sitio (por ejemplo a MYRE o a bodega). Anote el motivo abajo.'}</div>` : `
     <div class="lbl">Verificar estado</div>
-    <div>${CRIT.map((c) => `<div class="crit ${c.wide ? 'wide' : ''}"><span class="l">${c.l}${c.k === 'presion' && esCO2(e.tipo) ? ' <small class="muted">· el CO₂ no tiene manómetro</small>' : ''}</span><div class="seg">${c.o.map(([v, l]) => `<button data-act="crit" data-k="${c.k}" data-v="${v}" class="${ed.c[c.k] === v ? (esBueno(c, v) ? 'g' : 'b') : ''}">${l}</button>`).join('')}</div></div>`).join('')}</div>
-    <div class="crit wide"><span class="l">Altura al tope (metros) <small id="altHint" style="color:var(--warn);font-weight:700">${altNum(ed.altura) > ALT_MAX ? '· pasa de 1.53 m' : ''}</small></span>
-      <input id="fAlt" class="altin" inputmode="decimal" placeholder="1.50" value="${esc(ed.altura)}"></div>
+    <div>${critDe(S.cid).map((c) => `<div class="crit ${c.wide ? 'wide' : ''}"><span class="l">${c.l}${c.k === 'presion' && esCO2(e.tipo) ? ' <small class="muted">· el CO₂ no tiene manómetro</small>' : ''}</span><div class="seg">${c.o.map(([v, l]) => `<button data-act="crit" data-k="${c.k}" data-v="${v}" class="${ed.c[c.k] === v ? (esBueno(c, v) ? 'g' : 'b') : ''}">${l}</button>`).join('')}</div></div>`).join('')}</div>
+    ${usa(S.cid, 'altura') ? `<div class="crit wide"><span class="l">Altura al tope (metros) <small id="altHint" style="color:var(--warn);font-weight:700">${altNum(ed.altura) > ALT_MAX ? '· pasa de 1.53 m' : ''}</small></span>
+      <input id="fAlt" class="altin" inputmode="decimal" placeholder="1.50" value="${esc(ed.altura)}"></div>` : ''}
     <div class="crit wide"><span class="l">Soporte</span><div class="seg">${SOP.map(([v, l]) => `<button data-act="sop" data-v="${v}" class="${ed.soporte === v ? (v === 'pend' ? 'b' : 'g') : ''}">${l}</button>`).join('')}</div></div>`}
-    <div class="dates">
+    ${usa(S.cid, 'recargas') || usa(S.cid, 'ph') ? `    <div class="dates">
       <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="lbl">Fechas</span><span class="muted" style="font-size:11.5px">${r ? '' : 'Vienen de la inspección pasada'}</span></div>
       <div class="g3">
-        <label class="field">Recarga anterior<input id="fRA" inputmode="numeric" placeholder="MM/AAAA" value="${esc(ed.recAnt)}"></label>
-        <label class="field">Próxima recarga<input id="fRP" inputmode="numeric" placeholder="MM/AAAA" value="${esc(ed.recProx)}"></label>
-        ${esCO2(e.tipo) ? `<label class="field">PH (prueba hidrostática)<input id="fPH" inputmode="numeric" placeholder="MM/AAAA" value="${esc(ed.ph)}">${phVencido(ed.ph) ? '<small style="color:var(--warn);font-weight:700">Tiene más de 5 años</small>' : ''}</label>` : '<div class="field"><span>PH (prueba hidrostática)</span><div class="phna">n/a · solo en los CO₂</div></div>'}
+        ${usa(S.cid, 'recargas') ? `<label class="field">Recarga anterior<input id="fRA" inputmode="numeric" placeholder="MM/AAAA" value="${esc(ed.recAnt)}"></label>
+        <label class="field">Próxima recarga<input id="fRP" inputmode="numeric" placeholder="MM/AAAA" value="${esc(ed.recProx)}"></label>` : ''}
+        ${!usa(S.cid, 'ph') ? '' : esCO2(e.tipo) ? `<label class="field">PH (prueba hidrostática)<input id="fPH" inputmode="numeric" placeholder="MM/AAAA" value="${esc(ed.ph)}">${phVencido(ed.ph) ? '<small style="color:var(--warn);font-weight:700">Tiene más de 5 años</small>' : ''}</label>` : '<div class="field"><span>PH (prueba hidrostática)</span><div class="phna">n/a · solo en los CO₂</div></div>'}
       </div>
       <button class="btn sm" data-act="recargaHoy" style="border:1.5px dashed var(--red);color:var(--red)">Se recargó hoy · actualizar fechas</button>
-    </div>
+    </div>` : ''}
     <div class="lbl">Observaciones</div>
     <div class="qc">${QUICK.map((q) => `<button data-act="qobs" data-q="${esc(q)}" class="${ed.obs.split(';').map((x) => x.trim()).includes(q) ? 'on' : ''}">${esc(q)}</button>`).join('')}</div>
     <label><span class="sr">Observaciones</span><textarea class="obs" id="fObs" placeholder="Hallazgos, cambios, recargas…">${esc(ed.obs)}</textarea></label>
@@ -670,7 +683,7 @@ function guardarFicha({ cerrar = true } = {}) {
   for (const k of ['recAnt', 'recProx', 'ph']) if (ed[k] && !/^\d{2}\/\d{4}$/.test(ed[k]) && !(k === 'ph' && /^\d{4}$/.test(ed[k]))) { $('fHint').textContent = 'Las fechas van como MM/AAAA, por ejemplo 03/2027.'; return false; }
   const prev = S.rev[ed.eid] ? JSON.parse(JSON.stringify(S.rev[ed.eid])) : null; const eid = ed.eid;
   if (esCO2(e && e.tipo) === false) ed.ph = '';
-  const rec = { eid, c: ed.sit ? {} : ed.c, obs: ed.obs.trim(), recAnt: ed.recAnt, recProx: ed.recProx, ph: ed.ph, altura: altTxt(ed.altura), sit: ed.sit || '', soporte: ed.soporte || '', t: Date.now(), by: yo(), uid: Cloud.uid() };
+  const rec = { eid, ck: critDe(S.cid).map((x) => x.k), c: ed.sit ? {} : ed.c, obs: ed.obs.trim(), recAnt: ed.recAnt, recProx: ed.recProx, ph: ed.ph, altura: altTxt(ed.altura), sit: ed.sit || '', soporte: ed.soporte || '', t: Date.now(), by: yo(), uid: Cloud.uid() };
   S.rev[eid] = rec; Cloud.saveRevision(S.vid, eid, rec).catch(cloudError);
   const sopPend = rec.soporte === 'pend' ? 'pend' : '';
   if (e && (e.recAnt !== rec.recAnt || e.recProx !== rec.recProx || (e.ph || '') !== rec.ph || (e.altura || '') !== rec.altura || (e.soporte || '') !== sopPend)) { const dd = { recAnt: rec.recAnt, recProx: rec.recProx, ph: rec.ph, altura: rec.altura, soporte: sopPend }; Object.assign(e, dd); Cloud.saveExtintor(S.cid, eid, dd).catch(cloudError); }
@@ -683,8 +696,8 @@ function guardarFicha({ cerrar = true } = {}) {
 function afterSave() { if (ui.q) { ui.q = ''; route(); const q = $('q'); if (q) q.focus(); } else route(); }
 function okRapido(eid) {
   const e = extDe(eid); if (!e) return;
-  const c = Object.fromEntries(CRIT.map((x) => [x.k, x.good]));
-  if (esCO2(e.tipo)) c.presion = 'na';
+  const c = Object.fromEntries(critDe(S.cid).map((x) => [x.k, x.good]));
+  if (esCO2(e.tipo) && c.presion) c.presion = 'na';
   ed = { eid, c, obs: '', recAnt: e.recAnt || '', recProx: e.recProx || '', ph: e.ph || '', altura: e.altura || '', sit: '', soporte: sopDe(e, null) };
   guardarFicha({ cerrar: true });
 }
@@ -982,11 +995,14 @@ function renderACliente(cid) {
         <div class="inline" style="margin-bottom:10px"><input id="aExtQ" placeholder="Buscar por N°, área, marca, serie…" style="flex:1;min-width:160px;height:38px;border:1.5px solid #ddd;border-radius:10px;padding:0 10px"><button class="btn sm" data-act="aExtNuevo">+ Agregar</button><button class="btn sm" data-act="aExtExcel">⬇ Lista Excel</button><button class="btn sm" data-act="aExtImp">⬆ Cargar Excel</button></div>
         <div class="tbl" style="max-height:420px;overflow:auto"><table><thead><tr><th>N°</th><th>Zona</th><th>Área</th><th>Extintor</th><th></th></tr></thead><tbody id="aExtT">${ext.map((e) => `<tr data-q="${esc(norm([e.n, e.zona, e.area, e.marca, e.tipo, e.capacidad, e.serie, e.numero].join(' ')))}"><td><b>${esc(e.n)}</b></td><td>${esc(zonaCorta(e.zona || ''))}</td><td>${esc(e.area)}</td><td>${esc([e.marca, e.tipo, e.capacidad, e.numero && 'N° ' + e.numero].filter(Boolean).join(' · '))}</td><td style="text-align:right"><button class="btn sm" data-act="aExtEd" data-id="${e.id}">✎ Editar</button></td></tr>`).join('')}</tbody></table></div></div></div>
     </div>
-    <div class="side"><div class="card2 side2">${hd('wrench', 'n', 'Datos del proyecto', null)}<div class="bd">
+    <div class="side"><div class="card2 side2">${hd('wrench', 'n', 'Datos del proyecto', null)}<div class="bd nore">
       <label class="field">Cliente<input id="cN" value="${esc(c.nombre)}"></label>
       <label class="field">Lugar o sede<input id="cL" value="${esc(c.lugar || '')}"></label>
       <label class="field">Frecuencia<select id="cF">${[['unica', 'Una vez'], ['mensual', 'Mensual'], ['semanal', 'Semanal']].map(([k, l]) => `<option value="${k}" ${c.frecuencia === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
       ${c.frecuencia === 'semanal' ? `<label class="field">Día de visita<select id="cD">${DIAS.map((d, i) => `<option value="${i}" ${+c.dia === i ? 'selected' : ''}>${d}</option>`).join('')}</select></label>` : ''}
+      <div class="lbl" style="margin:6px 0 2px">Formato del reporte</div>
+      ${c.formato ? `<div class="muted" style="font-size:12.5px;margin-bottom:6px">Este cliente usa su propio Excel. El técnico revisa: <b>${esc(c.formato.items.filter((i) => i.t === 'chk').map((i) => i.l).join(', '))}</b>.</div>` : '<div class="muted" style="font-size:12.5px;margin-bottom:6px">Usa el formato estándar de SOS FIRE (el de Decameron). Para que el reporte salga con las columnas de otro cliente, suba su Excel.</div>'}
+      <div class="inline" style="margin-bottom:12px"><button class="btn sm" data-act="fmtSubir">⬆ ${c.formato ? 'Cambiar Excel del cliente' : 'Subir Excel del cliente'}</button>${c.formato ? '<button class="btn sm ghost" data-act="fmtQuitar">Volver al formato estándar</button>' : ''}</div>
       <div class="inline"><button class="btn sm pri" data-act="guardarCliente">Guardar cambios</button><button class="btn sm" data-act="fijar" data-id="${c.id}">${c.fijado ? 'Quitar de fijados' : 'Fijar arriba'}</button>
       ${v && v.estado === 'en_curso' ? '<button class="btn sm" data-act="terminarA">Terminar visita</button>' : v ? '<button class="btn sm" data-act="reabrirA">Reabrir visita</button>' : ''}</div>
       <div class="inline" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">${v ? '<button class="btn sm" data-act="borrarVisitaA" style="color:#C90012">Borrar esta visita</button>' : ''}<button class="btn sm" data-act="borrarClienteA" style="color:#C90012">Eliminar proyecto</button></div>
@@ -1023,6 +1039,52 @@ function renderATecnicos() {
   for (const id of ['tN', 'tU', 'tP', 'tR']) { const el = $(id); if (el) el.oninput = el.onchange = () => { if (id === 'tP') claveTec = el.value; else formTec[id] = el.value; }; }
 }
 
+
+/* ======================= Formato propio de cada cliente (Excel que sube el administrador) ======================= */
+const TIPOS_COL = [['n', 'N°'], ['zona', 'Zona'], ['area', 'Área / ubicación'], ['marca', 'Marca'], ['tipo', 'Tipo'], ['cap', 'Capacidad'], ['serie', 'Serie'], ['num', 'Número del extintor'], ['chk', 'Revisión del técnico'], ['recA', 'Recarga anterior'], ['recP', 'Próxima recarga'], ['ph', 'PH'], ['alt', 'Altura'], ['obs', 'Observaciones'], ['skip', 'No usar']];
+const REG_COL = [[/^n[°ºo.]?$|^no\.?$|^num\.?$|^item$|^#$/, 'n'], [/zona/, 'zona'], [/area|ubicaci|lugar|sitio/, 'area'], [/marca/, 'marca'], [/^tipo|tipo de ext/, 'tipo'], [/capacidad|peso|libras|lbs/, 'cap'], [/serie/, 'serie'], [/numero|n° ext|no\. ext|codigo|cod\./, 'num'], [/observ|comentari|nota/, 'obs'], [/^ph|prueba hidro/, 'ph'], [/altura/, 'alt'], [/anterior/, 'recA'], [/proxim/, 'recP'], [/presion|manometro|cilindro|senal|marchamo|manguera|boquilla|etiqueta|estado|instrucc|sello|seguro|gabinete|soporte|pin\b/, 'chk']];
+const clasificaCol = (t) => { const n = norm(t); if (!n) return null; for (const [re, k] of REG_COL) if (re.test(n)) return k; return null; };
+function celTxt(ws, r, c) {
+  const cell = ws.getCell(r, c); const m = cell.isMerged && cell.master ? cell.master : cell; const v = m.value; if (v == null) return '';
+  if (typeof v === 'object') return String(v.richText ? v.richText.map((x) => x.text).join('') : v.text != null ? v.text : v.result != null ? v.result : '').trim();
+  return String(v).trim();
+}
+// Lee el Excel del cliente: busca la fila de títulos y arma la lista de columnas (el administrador la confirma después)
+function parsearPlantilla(ws) {
+  const maxC = ws.columnCount; let best = 0, hr = 0;
+  for (let r = 1; r <= Math.min(30, ws.rowCount); r++) { let sc = 0; for (let c = 1; c <= maxC; c++) { const t = celTxt(ws, r, c); if (t && clasificaCol(t)) sc++; } if (sc > best) { best = sc; hr = r; } }
+  if (best < 3) return null;
+  const SUB = /^(bueno|buena|buen|malo|mala|mal|si|no|anterior|proxima|proximo|ant|prox)$/;
+  let nSub = 0; for (let c = 1; c <= maxC; c++) if (SUB.test(norm(celTxt(ws, hr + 1, c)))) nSub++;
+  const hasSub = nSub >= 2; const fi = hr + (hasSub ? 2 : 1);
+  const grupos = new Map();
+  for (let c = 1; c <= maxC; c++) {
+    const cell = ws.getCell(hr, c); const t = celTxt(ws, hr, c); const sub = hasSub ? norm(celTxt(ws, hr + 1, c)) : '';
+    if (!t && !sub) continue;
+    const key = cell.isMerged && cell.master ? cell.master.address : cell.address;
+    if (!grupos.has(key)) grupos.set(key, { l: t, cols: [], subs: [] });
+    const g = grupos.get(key); g.cols.push(c); g.subs.push(sub);
+  }
+  const items = []; let nk = 0;
+  for (const g of grupos.values()) {
+    const bm = g.subs.every((x) => /^(bueno|buena|buen|malo|mala|mal)$/.test(x)), sn = g.subs.every((x) => /^(si|no)$/.test(x));
+    if (g.cols.length === 2 && (bm || sn)) { items.push({ t: 'chk', l: g.l, o: bm ? 'bm' : 'sn', cb: g.cols[0], cm: g.cols[1] }); continue; }
+    if (g.subs.some((x) => /^(anterior|ant)$/.test(x)) && g.subs.some((x) => /^(proxima|proximo|prox)$/.test(x))) { g.cols.forEach((c, i) => items.push({ t: /^ant/.test(g.subs[i]) ? 'recA' : 'recP', l: (g.l + ' ' + g.subs[i]).trim(), c })); continue; }
+    g.cols.forEach((c, i) => { const t = [g.l, g.subs[i]].filter(Boolean).join(' '); const tp = clasificaCol(g.l) || clasificaCol(t) || 'skip'; items.push({ t: tp, l: g.subs[i] && g.cols.length > 1 ? t : g.l, o: 'bm', c }); });
+  }
+  return { hoja: ws.name, hr, fi, cmax: maxC, items };
+}
+const letraCol = (n) => { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+// Pantalla donde el administrador confirma qué es cada columna del Excel
+async function confirmarColumnas(fm) {
+  const html = `<div style="max-height:52vh;overflow:auto;text-align:left"><div style="display:grid;grid-template-columns:44px 1fr 150px;gap:6px;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:4px"><span>Col.</span><span>Título en su Excel</span><span>Es…</span></div>${fm.items.map((it, i) => `<div style="display:grid;grid-template-columns:44px 1fr 150px;gap:6px;align-items:center;margin-bottom:6px"><b style="font-size:12.5px">${letraCol(it.c || it.cb)}</b><input data-fl="${i}" value="${esc(it.l)}" style="height:36px;border:1.5px solid #ddd;border-radius:8px;padding:0 8px;font-size:13px;width:100%"><div><select data-ft="${i}" style="height:36px;width:100%;border:1.5px solid #ddd;border-radius:8px;font-size:12.5px">${TIPOS_COL.map(([k, l]) => `<option value="${k}" ${it.t === k ? 'selected' : ''}>${l}</option>`).join('')}</select>${it.t === 'chk' ? `<select data-fo="${i}" style="height:30px;width:100%;margin-top:3px;border:1.5px solid #ddd;border-radius:8px;font-size:12px"><option value="bm" ${it.o === 'bm' ? 'selected' : ''}>Bueno / Malo</option><option value="sn" ${it.o === 'sn' ? 'selected' : ''}>Sí / No</option></select>` : ''}</div></div>`).join('')}</div>`;
+  const ok = await ask('Columnas del formato del cliente', 'Revise que cada columna sea lo correcto. Las marcadas como "Revisión del técnico" son las que el técnico verá al revisar cada extintor. Lo que ponga "No usar" no aparece.', 'Guardar formato', html);
+  if (!ok) return null;
+  const out = JSON.parse(JSON.stringify(fm));
+  out.items.forEach((it, i) => { const l = document.querySelector(`[data-fl="${i}"]`), t = document.querySelector(`[data-ft="${i}"]`), o = document.querySelector(`[data-fo="${i}"]`); if (l) it.l = l.value.trim() || it.l; if (t) it.t = t.value; if (o) it.o = o.value; });
+  return out;
+}
+
 /* ======================= 7) Excel (hoja 2) y PDF ======================= */
 function b64ToBuf(b64) { const s = atob(b64); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u.buffer; }
 const nombreArchivo = (c, v, ext) => `Extintores_${String(c.nombre).replace(/[^\wÁÉÍÓÚáéíóúñÑ]+/g, '_')}_${v.fecha}.${ext}`;
@@ -1038,7 +1100,99 @@ async function datosVisita(vid) {
 // Orden del reporte: por zona (en el orden en que aparecen) y luego por N°
 function ordenReporte(ext) { const z = zonasDe(ext); return ext.slice().sort((a, b) => z.indexOf(a.zona || '') - z.indexOf(b.zona || '') || (a.n || 0) - (b.n || 0)); }
 
+// Resumen "Acciones correctivas o de mejora" y firmas al pie del Excel (sirve para cualquier formato)
+function cierreXlsx(ws, wb, rn, { c, v, ext, rev }, cA, cZ, h, izq, der) {
+  const LA = letraCol(cA), LZ = letraCol(cZ);
+  // Resumen "Acciones correctivas o de mejora", como lo escribe el cliente al final de la hoja 2
+  {
+    const AZUL = 'FF1D4E90'; const borde = { style: 'thin', color: { argb: 'FF2F5597' } };
+    ws.mergeCells(`${LA}${rn}:${LZ}${rn}`); const hc = ws.getCell(`${LA}${rn}`); hc.value = 'Acciones correctivas o de mejora';
+    hc.font = { bold: true, size: 9, color: { argb: 'FFFFFFFF' }, name: 'Arial' }; hc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: AZUL } }; hc.alignment = { horizontal: 'center', vertical: 'middle' }; ws.getRow(rn).height = 16;
+    rn++;
+    const txt = textoResumen({ c, v, ext, rev });
+    ws.mergeCells(`${LA}${rn}:${LZ}${rn}`); const bc = ws.getCell(`${LA}${rn}`);
+    bc.value = { richText: partesNegrita(txt).map((p) => ({ text: p.t, font: { name: 'Arial', size: 9.5, bold: p.b } })) };
+    bc.alignment = { wrapText: true, vertical: 'top', horizontal: 'justify' };
+    for (let col = cA; col <= cZ; col++) { const cl = ws.getRow(rn).getCell(col); cl.border = { bottom: borde, left: col === cA ? borde : undefined, right: col === cZ ? borde : undefined }; }
+    let anchoCh = 0; for (let col = cA; col <= cZ; col++) anchoCh += ws.getColumn(col).hidden ? 0 : (ws.getColumn(col).width || 8);
+    const lineas = Math.ceil(txt.replace(/\*\*/g, '').length / (anchoCh * 1.05)); ws.getRow(rn).height = Math.max(40, lineas * 13.5 + 12);
+    rn++;
+  }
+  // Firmas al pie, como en el formato de detectores
+  const f = F(v); const r1 = rn + 1, r2 = rn + 2, r3 = rn + 3;
+  const thin = { style: 'thin', color: { argb: 'FF7F7F7F' } };
+  // La plantilla está a escala grande (filas de ~194 pt, letra 72): el bloque de firmas se escala igual
+  const k = Math.max(1, (h || 27) / 27);
+  const bloque = (c1, c2, titulo, nombre, firma, etiqueta) => {
+    ws.mergeCells(`${c1}${r1}:${c2}${r1}`); const t = ws.getCell(`${c1}${r1}`); t.value = titulo ? `${titulo}: ${nombre || ''}` : nombre; t.font = { bold: true, size: Math.round(10 * k) }; t.alignment = { vertical: 'middle' };
+    ws.mergeCells(`${c1}${r2}:${c2}${r2}`); ws.getCell(`${c1}${r2}`).border = { bottom: { style: 'medium', color: { argb: 'FF7F7F7F' } } };
+    ws.mergeCells(`${c1}${r3}:${c2}${r3}`); const l = ws.getCell(`${c1}${r3}`); l.value = etiqueta; l.font = { size: Math.round(9 * k), color: { argb: 'FF555555' } }; l.alignment = { horizontal: 'center', vertical: 'top' };
+    if (firma) { const col = ws.getColumn(c1).number - 1; ws.addImage(wb.addImage({ base64: firma.split(',')[1], extension: 'png' }), { tl: { col: col + 0.4, row: r2 - 1 + 0.08 }, ext: { width: Math.round(230 * k), height: Math.round(76 * k) } }); }
+  };
+  ws.getRow(r1).height = Math.round(22 * k); ws.getRow(r2).height = Math.round(64 * k); ws.getRow(r3).height = Math.round(18 * k);
+  bloque(izq[0], izq[1], '', 'Equipo SOS FIRE', f.tec, 'Firma Equipo SOS FIRE');
+  bloque(der[0], der[1], encLabel(c), f.encNombre, f.enc, 'Firma ' + encLabel(c).replace('Encargado', 'encargado'));
+  rn = r3 + 1;
+  return { rn, r3 };
+}
+
+// Excel con el formato propio del cliente: se llena su mismo archivo, solo con las columnas que trae
+async function exportXlsxFmt({ c, v, ext, rev }) {
+  const f = c.formato; const wb = new ExcelJS.Workbook(); await wb.xlsx.load(b64ToBuf(c.formatoTpl));
+  const ws = wb.getWorksheet(f.hoja) || wb.worksheets[0]; const clone = (st) => JSON.parse(JSON.stringify(st || {}));
+  const cmax = f.cmax; const fi = f.fi; const proto = ws.getRow(fi); const protoSt = {}; for (let col = 1; col <= cmax; col++) protoSt[col] = clone(proto.getCell(col).style);
+  const h = proto.height; const merges = Object.values(ws._merges || {}).map((m) => m.model).filter((m) => m && m.top === fi && m.bottom === fi).map((m) => [m.left, m.right]);
+  // se quitan las filas de ejemplo que traiga el archivo del cliente
+  for (const m of Object.values(ws._merges || {}).map((x) => x.model).filter((m) => m && m.top >= fi)) { try { ws.unMergeCells(m.top, m.left, m.bottom, m.right); } catch (e) { /* ya estaba suelta */ } }
+  if (ws.rowCount > fi) ws.spliceRows(fi + 1, ws.rowCount - fi);
+  const red = { argb: 'FFC90012' }; let rn = fi;
+  for (const e of ordenReporte(ext)) {
+    const row = ws.getRow(rn); if (h) row.height = h;
+    for (let col = 1; col <= cmax; col++) { row.getCell(col).style = clone(protoSt[col]); }
+    for (const [l, r] of merges) { try { ws.mergeCells(rn, l, rn, r); } catch (er) { /* ya unida */ } }
+    const rv = rev[e.id] || {}; const cc = rv.c || {};
+    const put = (col, val, bad) => { const cell = ws.getCell(rn, col); cell.value = val; if (bad) cell.font = { ...clone(cell.font), color: red, bold: true }; };
+    for (const it of f.items) {
+      if (it.t === 'n') put(it.c, e.n); else if (it.t === 'zona') put(it.c, e.zona); else if (it.t === 'area') put(it.c, e.area); else if (it.t === 'marca') put(it.c, e.marca);
+      else if (it.t === 'tipo') put(it.c, e.tipo); else if (it.t === 'cap') put(it.c, e.capacidad); else if (it.t === 'serie') put(it.c, e.serie); else if (it.t === 'num') put(it.c, e.numero);
+      else if (it.t === 'recA') put(it.c, rv.recAnt || e.recAnt || '');
+      else if (it.t === 'recP') { const x = rv.recProx || e.recProx || ''; put(it.c, x, ['vencida', 'pronto'].includes(venc(x))); }
+      else if (it.t === 'ph') put(it.c, esCO2(e.tipo) ? (rv.ph || e.ph || '') : rv.t && !rv.sit ? 'n/a' : '', esCO2(e.tipo) && phVencido(rv.ph || e.ph));
+      else if (it.t === 'alt') { const a = altNum(rv.altura || e.altura); if (a != null) put(it.c, a.toFixed(2), a > ALT_MAX); }
+      else if (it.t === 'obs') put(it.c, obsReporte(e, rv));
+      else if (it.t === 'chk') {
+        const val = cc[it.k]; if (!val) continue; const cr = CK[it.k]; const bad = !esBueno(cr, val);
+        if (it.cb) put(cr.o[0][0] === val ? it.cb : it.cm, '✓', bad); else put(it.c, (cr.o.find((o) => o[0] === val) || [, ''])[1], bad);
+      }
+    }
+    rn++;
+  }
+  const cA = Math.min(...f.items.map((i) => i.c || i.cb)), cZ = cmax; const w = cZ - cA;
+  const cz = cierreXlsx(ws, wb, rn, { c, v, ext, rev }, cA, cZ, h, [letraCol(cA + 1), letraCol(cA + Math.max(2, Math.floor(w * 0.4)))], [letraCol(cA + Math.floor(w * 0.55)), letraCol(cZ - 1)]);
+  ws.pageSetup = { ...ws.pageSetup, paperSize: 1, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: `1:${fi - 1}`, printArea: `${letraCol(1)}1:${letraCol(cZ)}${Math.max(fi, cz.rn - 1)}`, horizontalCentered: true };
+  ws.headerFooter = { oddFooter: `&L&8${c.nombre} · ${fmtFecha(v.fecha)}&R&8Página &P de &N` };
+  const buf = await wb.xlsx.writeBuffer();
+  descargar(nombreArchivo(c, v, 'xlsx'), new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+}
+
+// Subir el Excel de un cliente (solo administrador): se leen sus columnas y se confirman
+async function subirFormato(file) {
+  if (!file) return; const c = cliente(S.aCid); if (!c) return;
+  try {
+    const buf = await file.arrayBuffer(); const wb = new ExcelJS.Workbook(); await wb.xlsx.load(buf); const ws = wb.worksheets[0];
+    const fm = ws && parsearPlantilla(ws);
+    if (!fm) return toast('No pude ubicar los títulos de las columnas. Revise que el Excel tenga una fila con Zona, Área, Marca, Tipo, etc.');
+    const ok = await confirmarColumnas(fm); if (!ok) return;
+    if (!ok.items.some((i) => i.t === 'chk')) return toast('Marque al menos una columna como "Revisión del técnico"');
+    ok.items.filter((i) => i.t === 'chk').forEach((i, n) => { i.k = 'x' + c.id.slice(0, 4) + n; });
+    let bin = ''; const u8 = new Uint8Array(buf); for (let i = 0; i < u8.length; i += 8192) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); const b64 = btoa(bin);
+    if (b64.length > 900000) return toast('El Excel es muy pesado (quite imágenes grandes) y no cabe en la base de datos');
+    await Cloud.updateCliente(c.id, { formato: ok, formatoTpl: b64 }); toast('Formato guardado. El reporte saldrá con las columnas de este Excel');
+  } catch (e) { console.error(e); toast('No pude leer ese Excel: ' + (e.message || e)); }
+}
+
 async function exportXlsx({ c, v, ext, rev }) {
+  if (c.formato && c.formatoTpl) return exportXlsxFmt({ c, v, ext, rev });
   const wb = new ExcelJS.Workbook(); await wb.xlsx.load(b64ToBuf(TEMPLATE_B64));
   const ws = wb.worksheets[0];
   const clone = (st) => JSON.parse(JSON.stringify(st || {}));
@@ -1057,48 +1211,24 @@ async function exportXlsx({ c, v, ext, rev }) {
     if (rn > 9) ws.mergeCells(`AF${rn}:AI${rn}`);
     const r = rev[e.id] || {}; const cc = r.c || {};
     const put = (col, val, bad) => { const cell = ws.getCell(`${col}${rn}`); cell.value = val; if (bad) cell.font = { ...clone(cell.font), color: red, bold: true }; };
+    const U = (k) => usa(c.id, k);
     put('E', e.n); put('F', e.zona); put('G', e.area); put('H', e.marca); put('I', e.tipo); put('J', e.capacidad); put('K', e.serie); put('L', e.numero);
-    if (cc.presion) put('M', cc.presion === 'ok' ? '✓' : cc.presion === 'na' ? 'n/a' : optLabel('presion', cc.presion), !esBueno(CK.presion, cc.presion));
+    if (cc.presion && U('presion')) put('M', cc.presion === 'ok' ? '✓' : cc.presion === 'na' ? 'n/a' : optLabel('presion', cc.presion), !esBueno(CK.presion, cc.presion));
     for (const k of ['cilindro', 'instrucciones', 'senal', 'marchamo', 'manguera', 'boquilla', 'etiqueta']) {
-      const cr = CK[k]; const val = cc[k]; if (!val) continue;
+      const cr = CK[k]; const val = cc[k]; if (!val || !U(k)) continue;
       const idx = cr.o.findIndex((o) => o[0] === val); put(cr.col[idx], '✓', !esBueno(cr, val));
     }
-    put('AB', r.recAnt || e.recAnt || ''); put('AC', r.recProx || e.recProx || '', ['vencida', 'pronto'].includes(venc(r.recProx || e.recProx)));
-    put('AD', esCO2(e.tipo) ? (r.ph || e.ph || '') : r.t && !r.sit ? 'n/a' : '', esCO2(e.tipo) && phVencido(r.ph || e.ph));
-    const aN = altNum(r.altura || e.altura); if (aN != null) put('AE', aN.toFixed(2), aN > ALT_MAX);
+    if (U('recargas')) { put('AB', r.recAnt || e.recAnt || ''); put('AC', r.recProx || e.recProx || '', ['vencida', 'pronto'].includes(venc(r.recProx || e.recProx))); }
+    if (U('ph')) put('AD', esCO2(e.tipo) ? (r.ph || e.ph || '') : r.t && !r.sit ? 'n/a' : '', esCO2(e.tipo) && phVencido(r.ph || e.ph));
+    const aN = altNum(r.altura || e.altura); if (aN != null && U('altura')) put('AE', aN.toFixed(2), aN > ALT_MAX);
     put('AF', obsReporte(e, r));
     rn++;
   }
-  // Resumen "Acciones correctivas o de mejora", como lo escribe el cliente al final de la hoja 2
-  {
-    const AZUL = 'FF1D4E90'; const borde = { style: 'thin', color: { argb: 'FF2F5597' } };
-    ws.mergeCells(`B${rn}:AI${rn}`); const hc = ws.getCell(`B${rn}`); hc.value = 'Acciones correctivas o de mejora';
-    hc.font = { bold: true, size: 9, color: { argb: 'FFFFFFFF' }, name: 'Arial' }; hc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: AZUL } }; hc.alignment = { horizontal: 'center', vertical: 'middle' }; ws.getRow(rn).height = 16;
-    rn++;
-    const txt = textoResumen({ c, v, ext, rev });
-    ws.mergeCells(`B${rn}:AI${rn}`); const bc = ws.getCell(`B${rn}`);
-    bc.value = { richText: partesNegrita(txt).map((p) => ({ text: p.t, font: { name: 'Arial', size: 9.5, bold: p.b } })) };
-    bc.alignment = { wrapText: true, vertical: 'top', horizontal: 'justify' };
-    for (let col = 2; col <= 35; col++) { const cl = ws.getRow(rn).getCell(col); cl.border = { top: col === 2 ? undefined : undefined, bottom: borde, left: col === 2 ? borde : undefined, right: col === 35 ? borde : undefined }; }
-    let anchoCh = 0; for (let col = 2; col <= 35; col++) anchoCh += ws.getColumn(col).width || 8;
-    const lineas = Math.ceil(txt.replace(/\*\*/g, '').length / (anchoCh * 1.05)); ws.getRow(rn).height = Math.max(40, lineas * 13.5 + 12);
-    rn++;
-  }
-  // Firmas al pie, como en el formato de detectores
-  const f = F(v); const r1 = rn + 1, r2 = rn + 2, r3 = rn + 3;
-  const thin = { style: 'thin', color: { argb: 'FF7F7F7F' } };
-  // La plantilla está a escala grande (filas de ~194 pt, letra 72): el bloque de firmas se escala igual
-  const k = Math.max(1, (h || 27) / 27);
-  const bloque = (c1, c2, titulo, nombre, firma, etiqueta) => {
-    ws.mergeCells(`${c1}${r1}:${c2}${r1}`); const t = ws.getCell(`${c1}${r1}`); t.value = titulo ? `${titulo}: ${nombre || ''}` : nombre; t.font = { bold: true, size: Math.round(10 * k) }; t.alignment = { vertical: 'middle' };
-    ws.mergeCells(`${c1}${r2}:${c2}${r2}`); ws.getCell(`${c1}${r2}`).border = { bottom: { style: 'medium', color: { argb: 'FF7F7F7F' } } };
-    ws.mergeCells(`${c1}${r3}:${c2}${r3}`); const l = ws.getCell(`${c1}${r3}`); l.value = etiqueta; l.font = { size: Math.round(9 * k), color: { argb: 'FF555555' } }; l.alignment = { horizontal: 'center', vertical: 'top' };
-    if (firma) { const col = ws.getColumn(c1).number - 1; ws.addImage(wb.addImage({ base64: firma.split(',')[1], extension: 'png' }), { tl: { col: col + 0.4, row: r2 - 1 + 0.08 }, ext: { width: Math.round(230 * k), height: Math.round(76 * k) } }); }
-  };
-  ws.getRow(r1).height = Math.round(22 * k); ws.getRow(r2).height = Math.round(64 * k); ws.getRow(r3).height = Math.round(18 * k);
-  bloque('E', 'L', '', 'Equipo SOS FIRE', f.tec, 'Firma Equipo SOS FIRE');
-  bloque('T', 'AE', encLabel(c), f.encNombre, f.enc, 'Firma ' + encLabel(c).replace('Encargado', 'encargado'));
-  rn = r3 + 1;
+  // Columnas que este cliente no usa: se ocultan (cada cliente tiene su propio formato)
+  { const ocultar = []; for (const cr of CRIT) if (!usa(c.id, cr.k)) ocultar.push(...(cr.col || ['M']));
+    if (!usa(c.id, 'recargas')) ocultar.push('AB', 'AC'); if (!usa(c.id, 'ph')) ocultar.push('AD'); if (!usa(c.id, 'altura')) ocultar.push('AE');
+    for (const l of ocultar) ws.getColumn(l).hidden = true; }
+  { const cz = cierreXlsx(ws, wb, rn, { c, v, ext, rev }, 2, 35, h, ['E', 'L'], ['T', 'AE']); rn = cz.rn; }
   ws.pageSetup = { ...ws.pageSetup, paperSize: 1, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0, printTitlesRow: '5:8', printArea: `B1:AI${Math.max(9, rn - 1)}`, horizontalCentered: true };
   ws.headerFooter = { oddFooter: `&L&8${c.nombre} · ${fmtFecha(v.fecha)}&R&8Página &P de &N` };
   const buf = await wb.xlsx.writeBuffer();
@@ -1131,21 +1261,42 @@ async function exportPdf({ c, v, ext, rev }) {
   }
   // Tabla completa con el formato de la hoja 2
   doc.addPage(); head();
+  if (c.formato) {
+    const its = c.formato.items.filter((i) => i.t !== 'skip'); const lista = ordenReporte(ext);
+    const val = (it, e, rv) => { const cc = rv.c || {};
+      switch (it.t) { case 'n': return e.n; case 'zona': return zonaCorta(e.zona); case 'area': return e.area; case 'marca': return e.marca; case 'tipo': return e.tipo; case 'cap': return e.capacidad; case 'serie': return e.serie; case 'num': return e.numero;
+        case 'recA': return rv.recAnt || e.recAnt || ''; case 'recP': return rv.recProx || e.recProx || ''; case 'ph': return esCO2(e.tipo) ? (rv.ph || e.ph || '') : rv.t && !rv.sit ? 'n/a' : ''; case 'alt': return altTxt(rv.altura || e.altura); case 'obs': return obsReporte(e, rv);
+        case 'chk': return cc[it.k] ? ((CK[it.k].o.find((o) => o[0] === cc[it.k]) || [, ''])[1]) : ''; default: return ''; } };
+    doc.autoTable({ startY: 26, margin: { left: M, right: M, top: 26, bottom: 12 }, theme: 'grid', head: [its.map((i) => i.l)],
+      body: limpia(lista.map((e) => its.map((it) => val(it, e, rev[e.id] || {})))),
+      headStyles: { fillColor: BLUE, fontSize: 6.5, halign: 'center', valign: 'middle', cellPadding: 1.2, lineColor: [255, 255, 255], lineWidth: 0.2 },
+      styles: { fontSize: 6.8, cellPadding: 1.2, valign: 'middle', lineColor: [190, 190, 190], lineWidth: 0.15, overflow: 'linebreak' },
+      columnStyles: Object.fromEntries(its.map((it, i) => [i, ['area', 'obs'].includes(it.t) ? { cellWidth: 'auto' } : { halign: 'center' }])),
+      didParseCell: (d) => { if (d.section !== 'body') return; const it = its[d.column.index]; const e = lista[d.row.index]; const rv = rev[e.id] || {}; let bad = false;
+        if (it.t === 'chk') bad = rv.c && rv.c[it.k] && !esBueno(CK[it.k], rv.c[it.k]); else if (it.t === 'recP') bad = ['vencida', 'pronto'].includes(venc(d.cell.raw)); else if (it.t === 'alt') bad = altNum(d.cell.raw) > ALT_MAX;
+        if (bad) { d.cell.styles.textColor = RED; d.cell.styles.fontStyle = 'bold'; d.cell.styles.fillColor = [253, 236, 236]; } },
+      willDrawPage: (d) => { if (d.pageNumber > 1) head(); } });
+  } else {
   const yn = (k, val) => (val ? (k === 'presion' && val === 'na' ? 'n/a' : (CK[k].o.find((o) => o[0] === val) || [, ''])[1]) : '');
   const body = ordenReporte(ext).map((e) => { const r = rev[e.id] || {}; const cc = r.c || {};
     return [e.n, zonaCorta(e.zona), e.area, e.marca, e.tipo, e.capacidad, e.serie, e.numero, yn('presion', cc.presion), yn('cilindro', cc.cilindro), yn('instrucciones', cc.instrucciones), yn('senal', cc.senal), yn('marchamo', cc.marchamo), yn('manguera', cc.manguera), yn('boquilla', cc.boquilla), yn('etiqueta', cc.etiqueta), r.recAnt || e.recAnt || '', r.recProx || e.recProx || '', esCO2(e.tipo) ? (r.ph || e.ph || '') : r.t && !r.sit ? 'n/a' : '', altTxt(r.altura || e.altura), obsReporte(e, r)]; });
-  const keys = [null, null, null, null, null, null, null, null, 'presion', 'cilindro', 'instrucciones', 'senal', 'marchamo', 'manguera', 'boquilla', 'etiqueta', null, 'recProx', null, 'altura', null];
+  const drop = new Set(); CRIT.forEach((cr, i) => { if (!usa(c.id, cr.k)) drop.add(8 + i); });
+  if (!usa(c.id, 'recargas')) { drop.add(16); drop.add(17); } if (!usa(c.id, 'ph')) drop.add(18); if (!usa(c.id, 'altura')) drop.add(19);
+  const sel = (arr) => arr.filter((_, i) => !drop.has(i));
+  const remap = (o) => { const out = {}; let n = 0; for (let i = 0; i <= 20; i++) if (!drop.has(i)) out[n++] = o[i]; return out; };
+  const keys = sel([null, null, null, null, null, null, null, null, 'presion', 'cilindro', 'instrucciones', 'senal', 'marchamo', 'manguera', 'boquilla', 'etiqueta', null, 'recProx', null, 'altura', null]);
   doc.autoTable({ startY: 26, margin: { left: M, right: M, top: 26, bottom: 12 }, theme: 'grid',
-    head: [[{ content: 'PASO 1 · DESCRIBIR EXTINTOR', colSpan: 8 }, { content: 'PASO 2 · VERIFICAR ESTADO DEL EXTINTOR', colSpan: 13 }],
-      ['N°', 'Zona', 'Área', 'Marca', 'Tipo', 'Cap.', 'Serie', 'N° ext.', 'Presión', 'Cilindro', 'Instr.', 'Señal.', 'Marchamo', 'Manguera', 'Boquilla', 'Etiqueta', 'Rec. ant.', 'Próxima', 'PH', 'Altura', 'Observaciones']],
-    body: limpia(body), headStyles: { fillColor: BLUE, fontSize: 6, halign: 'center', valign: 'middle', cellPadding: 1.2, lineColor: [255, 255, 255], lineWidth: 0.2 },
+    head: [[{ content: 'PASO 1 · DESCRIBIR EXTINTOR', colSpan: 8 }, { content: 'PASO 2 · VERIFICAR ESTADO DEL EXTINTOR', colSpan: 13 - drop.size }],
+      sel(['N°', 'Zona', 'Área', 'Marca', 'Tipo', 'Cap.', 'Serie', 'N° ext.', 'Presión', 'Cilindro', 'Instr.', 'Señal.', 'Marchamo', 'Manguera', 'Boquilla', 'Etiqueta', 'Rec. ant.', 'Próxima', 'PH', 'Altura', 'Observaciones'])],
+    body: limpia(body.map(sel)), headStyles: { fillColor: BLUE, fontSize: 6, halign: 'center', valign: 'middle', cellPadding: 1.2, lineColor: [255, 255, 255], lineWidth: 0.2 },
     styles: { fontSize: 6.8, cellPadding: 1.2, valign: 'middle', lineColor: [190, 190, 190], lineWidth: 0.15, overflow: 'linebreak' },
-    columnStyles: { 0: { cellWidth: 7, halign: 'center' }, 1: { cellWidth: 14 }, 2: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 8, halign: 'center' }, 5: { cellWidth: 8, halign: 'center' }, 6: { cellWidth: 11 }, 7: { cellWidth: 10 },
-      8: { cellWidth: 11.5, halign: 'center' }, 9: { cellWidth: 10.5, halign: 'center' }, 10: { cellWidth: 8, halign: 'center' }, 11: { cellWidth: 10, halign: 'center' }, 12: { cellWidth: 12, halign: 'center' }, 13: { cellWidth: 12, halign: 'center' }, 14: { cellWidth: 11, halign: 'center' }, 15: { cellWidth: 11, halign: 'center' }, 16: { cellWidth: 11, halign: 'center' }, 17: { cellWidth: 11, halign: 'center' }, 18: { cellWidth: 7.5, halign: 'center' }, 19: { cellWidth: 11.5, halign: 'center' }, 20: { cellWidth: 'auto' } },
+    columnStyles: remap({ 0: { cellWidth: 7, halign: 'center' }, 1: { cellWidth: 14 }, 2: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 8, halign: 'center' }, 5: { cellWidth: 8, halign: 'center' }, 6: { cellWidth: 11 }, 7: { cellWidth: 10 },
+      8: { cellWidth: 11.5, halign: 'center' }, 9: { cellWidth: 10.5, halign: 'center' }, 10: { cellWidth: 8, halign: 'center' }, 11: { cellWidth: 10, halign: 'center' }, 12: { cellWidth: 12, halign: 'center' }, 13: { cellWidth: 12, halign: 'center' }, 14: { cellWidth: 11, halign: 'center' }, 15: { cellWidth: 11, halign: 'center' }, 16: { cellWidth: 11, halign: 'center' }, 17: { cellWidth: 11, halign: 'center' }, 18: { cellWidth: 7.5, halign: 'center' }, 19: { cellWidth: 11.5, halign: 'center' }, 20: { cellWidth: 'auto' } }),
     didParseCell: (d) => { if (d.section !== 'body') return; const k = keys[d.column.index]; if (!k) return; const e = ordenReporte(ext)[d.row.index]; const r = rev[e.id] || {};
       const bad = k === 'recProx' ? ['vencida', 'pronto'].includes(venc(d.cell.raw)) : k === 'altura' ? altNum(d.cell.raw) > ALT_MAX : r.c && r.c[k] && !esBueno(CK[k], r.c[k]);
       if (bad) { d.cell.styles.textColor = RED; d.cell.styles.fontStyle = 'bold'; d.cell.styles.fillColor = [253, 236, 236]; } },
     willDrawPage: (d) => { if (d.pageNumber > 1) head(); } });
+  }
   // Resumen "Acciones correctivas o de mejora" (justificado, con negrita)
   let yEnd = doc.lastAutoTable.finalY + 6;
   {
@@ -1227,8 +1378,8 @@ const ACT = {
   sop: (el) => { ed.soporte = ed.soporte === el.dataset.v && el.dataset.v ? '' : el.dataset.v; pintarFicha(); },
   crit: (el) => { const { k, v } = el.dataset; if (k === 'presion') ed.presionAuto = false; ed.c[k] = ed.c[k] === v ? '' : v; ed.aviso = ''; pintarFicha(); },
   todoBien: () => {
-    for (const c of CRIT) ed.c[c.k] = c.good;
-    if (esCO2((extDe(ed.eid) || {}).tipo)) ed.c.presion = 'na';
+    for (const c of critDe(S.cid)) ed.c[c.k] = c.good;
+    if (esCO2((extDe(ed.eid) || {}).tipo) && usa(S.cid, 'presion')) ed.c.presion = 'na';
     ed.sit = '';
     if (ed.prevMalo && ed.obs.trim()) { ed.prevMalo = false; pintarFicha(); $('fObs').style.borderColor = 'var(--warn)'; $('fHint').textContent = 'Ya quedó todo en bien. ¿La observación sigue aplicando? Bórrela o edítela y toque Guardar.'; $('fObs').scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     guardarFicha();
@@ -1275,6 +1426,8 @@ const ACT = {
     const buf = await wb.xlsx.writeBuffer(); descargar(`Extintores_${(c ? c.nombre : 'proyecto').replace(/\s+/g, '_')}.xlsx`, new Blob([buf], { type: 'application/octet-stream' }));
   },
   aExtImp: () => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.xlsx'; i.onchange = () => importarExtintores(i.files[0]); i.click(); },
+  fmtSubir: () => { const i = document.createElement('input'); i.type = 'file'; i.accept = '.xlsx'; i.onchange = () => subirFormato(i.files[0]); i.click(); },
+  fmtQuitar: async () => { if (!(await ask('Volver al formato estándar', 'El reporte volverá a salir con el formato de SOS FIRE. Las revisiones ya hechas no se pierden.', 'Volver'))) return; Cloud.updateCliente(S.aCid, { formato: Cloud.deleteField(), formatoTpl: Cloud.deleteField() }).then(() => toast('Formato estándar')).catch(cloudError); },
   borrarVisitaA: async () => {
     const v = S.aVisitas.find((x) => x.id === S.aVid); if (!v) return;
     if (!(await ask('Borrar visita', `Se borrará la visita del ${fmtFecha(v.fecha)} con todas sus revisiones y firmas. No se puede deshacer. Descargue antes el reporte si lo necesita.`, 'Borrar'))) return;
