@@ -119,6 +119,7 @@ async function borrarVisita(vid) {
   await deleteDoc(doc(db, 'ext_visitas', vid));
 }
 // Borra un proyecto completo: sus visitas (con revisiones), sus extintores y el cliente. Solo el administrador (lo exigen las reglas).
+const borrarExtintor = (cid, eid) => deleteDoc(doc(db, 'ext_clientes', cid, 'extintores', eid));
 async function borrarCliente(cid) {
   const vs = (await getDocs(query(collection(db, 'ext_visitas'), where('cid', '==', cid)))).docs;
   for (const v of vs) await borrarVisita(v.id);
@@ -136,6 +137,6 @@ window.Cloud = {
   watchUsuario, watchUsuarios, setUsuario, borrarUsuario, crearTecnico,
   watchClientes, crearCliente, updateCliente, watchExtintores, nuevoIdExtintor, saveExtintor, addExtintores,
   watchVisitasCliente, watchVisitasDesde, watchVisitasActivas, todasLasVisitas, crearVisita, updateVisita, watchVisita,
-  watchRevisiones, revisiones, saveRevision, presente, salir, borrarVisita, borrarCliente,
+  watchRevisiones, revisiones, saveRevision, presente, salir, borrarVisita, borrarCliente, borrarExtintor,
   watchConfig, saveConfig, deleteField,
 };

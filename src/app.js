@@ -736,7 +736,7 @@ async function formExtintor(eid, sugerencia = '', adm = false) {
       <label class="field">Número del extintor<input id="xN" value="${esc(e ? e.numero : '')}"></label>
       <label class="field">N° en la lista<input id="xO" inputmode="numeric" value="${esc(e ? e.n : nextN)}"></label>
     </div>
-    ${e ? '<button class="btn sm ghost" id="xBaja" style="color:var(--red);width:auto">Quitar de la lista (ya no existe)</button>' : ''}`;
+    ${e ? '<button class="btn sm ghost" id="xBaja" style="color:var(--red);width:auto">Eliminar extintor definitivamente</button>' : ''}`;
   const p = ask(e ? `Datos del extintor #${e.n}` : 'Agregar extintor', e ? 'Corrija lo que haya cambiado (por ejemplo, si lo sustituyeron o lo movieron de área).' : 'Queda guardado en este proyecto para las próximas visitas.', e ? 'Guardar' : 'Agregar y revisar', html);
   let abrirOtro = null;
   if (!e) {
@@ -753,8 +753,8 @@ async function formExtintor(eid, sugerencia = '', adm = false) {
   let baja = false; const bb = $('xBaja'); if (bb) bb.onclick = async () => { baja = true; $('dlgSi').click(); };
   if (!(await p)) { if (abrirOtro) { ui.q = ''; ui.filtro = 'all'; route(); abrirFicha(abrirOtro); } return; }
   if (baja) {
-    if (!(await ask('Quitar extintor', `¿Quitar el #${e.n} ${e.area} de la lista? Ya no aparecerá en las próximas visitas.`, 'Quitar'))) return;
-    Cloud.saveExtintor(CID, eid, { baja: true, bajaT: Date.now() }).catch(cloudError); cerrarFicha(); toast(`#${e.n} quitado`); return;
+    if (!(await ask('Eliminar extintor', `¿Eliminar definitivamente el #${e.n} ${e.area}? Se borra de la lista y de las próximas visitas. No se puede deshacer.`, 'Eliminar'))) return;
+    Cloud.borrarExtintor(CID, eid).catch(cloudError); cerrarFicha(); toast(`#${e.n} eliminado`); return;
   }
   const d = { zona: $('xZ').value.trim(), area: $('xA').value.trim().replace(/\s+/g, ' '), marca: $('xM').value.trim(), tipo: $('xT').value, capacidad: $('xC').value.trim(), serie: $('xS').value.trim(), numero: $('xN').value.trim(), n: +$('xO').value || nextN };
   if (!d.area) { toast('Escriba el área del extintor'); return formExtintor(eid, sugerencia, adm); }
