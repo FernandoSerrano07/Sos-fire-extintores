@@ -716,6 +716,11 @@ $('shSig').onclick = () => {
   if (sig) abrirFicha(sig.id); else { cerrarFicha(); toast('No hay más pendientes después de este'); }
 };
 $('shEditar').onclick = () => { if (ed) formExtintor(ed.eid); };
+async function eliminarExt(cid, e) {
+  if (!e || !(await ask('Eliminar extintor', `¿Eliminar definitivamente el #${e.n} ${e.area}? Se borra de la lista y de las próximas visitas. No se puede deshacer.`, 'Eliminar'))) return false;
+  Cloud.borrarExtintor(cid, e.id).catch(cloudError); toast(`#${e.n} eliminado`); return true;
+}
+$('shElim').onclick = async () => { if (ed && (await eliminarExt(S.cid, extDe(ed.eid)))) cerrarFicha(); };
 
 // ----- Datos del extintor (agregar nuevo o corregir) -----
 async function formExtintor(eid, sugerencia = '', adm = false) {
@@ -993,7 +998,7 @@ function renderACliente(cid) {
     </tbody></table></div></div>
       <div class="card2">${hd('wrench', 'n', 'Extintores del proyecto', ext.length)}<div class="bd">
         <div class="inline" style="margin-bottom:10px"><input id="aExtQ" placeholder="Buscar por N°, área, marca, serie…" style="flex:1;min-width:160px;height:38px;border:1.5px solid #ddd;border-radius:10px;padding:0 10px"><button class="btn sm" data-act="aExtNuevo">+ Agregar</button><button class="btn sm" data-act="aExtExcel">⬇ Lista Excel</button><button class="btn sm" data-act="aExtImp">⬆ Cargar Excel</button></div>
-        <div class="tbl" style="max-height:420px;overflow:auto"><table><thead><tr><th>N°</th><th>Zona</th><th>Área</th><th>Extintor</th><th></th></tr></thead><tbody id="aExtT">${ext.map((e) => `<tr data-q="${esc(norm([e.n, e.zona, e.area, e.marca, e.tipo, e.capacidad, e.serie, e.numero].join(' ')))}"><td><b>${esc(e.n)}</b></td><td>${esc(zonaCorta(e.zona || ''))}</td><td>${esc(e.area)}</td><td>${esc([e.marca, e.tipo, e.capacidad, e.numero && 'N° ' + e.numero].filter(Boolean).join(' · '))}</td><td style="text-align:right"><button class="btn sm" data-act="aExtEd" data-id="${e.id}">✎ Editar</button></td></tr>`).join('')}</tbody></table></div></div></div>
+        <div class="tbl" style="max-height:420px;overflow:auto"><table><thead><tr><th>N°</th><th>Zona</th><th>Área</th><th>Extintor</th><th></th></tr></thead><tbody id="aExtT">${ext.map((e) => `<tr data-q="${esc(norm([e.n, e.zona, e.area, e.marca, e.tipo, e.capacidad, e.serie, e.numero].join(' ')))}"><td><b>${esc(e.n)}</b></td><td>${esc(zonaCorta(e.zona || ''))}</td><td>${esc(e.area)}</td><td>${esc([e.marca, e.tipo, e.capacidad, e.numero && 'N° ' + e.numero].filter(Boolean).join(' · '))}</td><td style="text-align:right;white-space:nowrap"><button class="btn sm" data-act="aExtEd" data-id="${e.id}">✎ Editar</button> <button class="btn sm" data-act="aExtDel" data-id="${e.id}" style="color:#C90012">🗑 Eliminar</button></td></tr>`).join('')}</tbody></table></div></div></div>
     </div>
     <div class="side"><div class="card2 side2">${hd('wrench', 'n', 'Datos del proyecto', null)}<div class="bd nore">
       <label class="field">Cliente<input id="cN" value="${esc(c.nombre)}"></label>
@@ -1416,6 +1421,7 @@ const ACT = {
   vCliSel: (el) => { ui.vCli = el.dataset.id; renderAHome(); },
   verVenc: () => { const v = vencimientos(); if (!v.mes.length && v.venc.length) ui.vTab = 'venc'; renderAHome(); const s = $('secVenc'); if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
   xlsxVenc: () => run(exportVencimientos),
+  aExtDel: (el) => eliminarExt(S.aCid, S.aExt.find((x) => x.id === el.dataset.id)),
   aExtEd: (el) => formExtintor(el.dataset.id, '', true),
   aExtNuevo: () => formExtintor(null, '', true),
   aExtExcel: async () => {
