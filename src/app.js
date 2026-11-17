@@ -73,7 +73,7 @@ function descargar(nombre, blob) {
 /* ======================= 2) Criterios del formato (Hoja 2) ======================= */
 // good = la opción correcta. col = columnas del Excel para cada opción (Bueno|Malo, Sí|No).
 const CRIT = [
-  { k: 'presion', l: 'Presión del manómetro', o: [['ok', 'Correcta'], ['baja', 'Baja'], ['alta', 'Alta'], ['na', 'No aplica']], good: 'ok', also: ['na'], wide: true },
+  { k: 'presion', l: 'Presión del manómetro', o: [['ok', 'Buena'], ['mal', 'Mala']], good: 'ok', also: ['na'], wide: false },
   { k: 'cilindro', l: 'Estado físico cilindro', o: [['b', 'Bueno'], ['m', 'Malo']], good: 'b', col: ['N', 'O'] },
   { k: 'instrucciones', l: 'Instrucciones de uso', o: [['s', 'Sí'], ['n', 'No']], good: 's', col: ['P', 'Q'] },
   { k: 'senal', l: 'Señalización', o: [['b', 'Bueno'], ['m', 'Malo']], good: 'b', col: ['R', 'S'] },
@@ -83,9 +83,9 @@ const CRIT = [
   { k: 'etiqueta', l: 'Etiqueta', o: [['s', 'Sí'], ['n', 'No']], good: 's', col: ['Z', 'AA'] },
 ];
 const CK = Object.fromEntries(CRIT.map((c) => [c.k, c]));
-const optLabel = (k, v) => (CK[k].o.find((o) => o[0] === v) || [, ''])[1];
+const optLabel = (k, v) => (CK[k].o.find((o) => o[0] === v) || [, k === 'presion' && (v === 'baja' || v === 'alta') ? 'Mala' : ''])[1];
 // Frases que el cliente ya usa en su hoja 2 (columna Observaciones)
-const QUICK = ['PH ficticia', 'Cambiar manguera', 'Se cambió manómetro', 'Manguera cristalizada', 'Tarjeta de control no visible', 'Despresurizado', 'Descargado en bodega', 'Se cambió cincho plástico', 'Retirado para MYRE', 'Se sometió a MYRE', 'Pendiente de MYRE', 'Se efectuó MYRE', 'Requiere recarga'];
+const QUICK = ['Cambiar manómetro', 'PH ficticia', 'Cambiar manguera', 'Se cambió manómetro', 'Manguera cristalizada', 'Tarjeta de control no visible', 'Despresurizado', 'Descargado en bodega', 'Se cambió cincho plástico', 'Retirado para MYRE', 'Se sometió a MYRE', 'Pendiente de MYRE', 'Se efectuó MYRE', 'Requiere recarga'];
 // Situación del extintor: cuando no se puede inspeccionar normalmente
 const SIT = [['', 'Normal'], ['noenc', 'No se encontró'], ['reserva', 'Reserva'], ['retirado', 'Retirado']];
 const SIT_TXT = { noenc: 'No encontrado', reserva: 'Reserva', retirado: 'Retirado' };
